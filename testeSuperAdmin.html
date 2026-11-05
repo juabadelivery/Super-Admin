@@ -1,0 +1,2196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin | Dono do App - JuabaDelivery</title>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1046/1046784.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ea1d2c;
+            --primary-dark: #b91c1c;
+            --gold: #f59e0b;
+            --dark: #0f172a;
+            --dark-card: #1e293b;
+            --bg: #f1f5f9;
+            --white: #ffffff;
+            --success: #16a34a;
+            --border: #e2e8f0;
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: #1e293b; font-size: 14px; padding-bottom: 95px; }
+
+        #admin-auth-screen { position: fixed; inset: 0; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); z-index: 9000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-card { background: var(--white); width: 100%; max-width: 400px; padding: 32px 24px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); text-align: center; }
+        .crown-badge { width: 64px; height: 64px; background: #fef3c7; color: #d97706; border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 14px; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.25); }
+        .input-group { text-align: left; margin-bottom: 14px; }
+        .input-group label { display: block; font-size: 0.78rem; font-weight: 800; color: #475569; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-group input, .input-group select { width: 100%; padding: 13px 14px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 0.95rem; font-weight: 600; outline: none; background: #f8fafc; transition: 0.2s; }
+        .input-group input:focus { border-color: var(--primary); background: #fff; }
+        .btn-main { width: 100%; background: var(--primary); color: #fff; border: none; padding: 14px; border-radius: 12px; font-weight: 900; font-size: 1rem; cursor: pointer; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-main:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        header { background: var(--dark); color: var(--white); padding: 16px 20px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .view-section { display: none; max-width: 1100px; margin: 20px auto; padding: 0 16px; animation: fadeIn 0.2s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 18px; }
+        .kpi-card { background: var(--white); border-radius: 16px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 4px; }
+        .kpi-label { font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
+        .kpi-value { font-size: 1.55rem; font-weight: 900; color: #0f172a; }
+        .kpi-sub { font-size: 0.76rem; font-weight: 700; color: var(--success); }
+
+        .panel-box { background: var(--white); border-radius: 18px; padding: 20px; border: 1px solid var(--border); margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+        .panel-title { font-size: 1.15rem; font-weight: 900; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+
+        /* Card Simplificado da Loja com Ações de 1 Clique */
+        .store-admin-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: 18px; margin-bottom: 12px; background: #fff; transition: 0.15s; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        .store-admin-card:hover { border-color: #cbd5e1; }
+        .store-admin-card.blocked { background: #fef2f2; border-color: #fecaca; }
+        .store-admin-card.overdue { border-left: 5px solid #dc2626; }
+        .store-admin-card.warning { border-left: 5px solid #f59e0b; }
+        .store-admin-card.paid { border-left: 5px solid #16a34a; }
+        .store-admin-card.free { border-left: 5px solid #0284c7; }
+
+        .store-top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
+        .store-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+        .store-left img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; background: #f1f5f9; flex-shrink: 0; }
+
+        .store-quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
+        @media (max-width: 600px) { .store-quick-actions { grid-template-columns: repeat(2, 1fr); } }
+
+        .btn-quick { padding: 10px 12px; border-radius: 12px; border: 1px solid transparent; font-weight: 800; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: 0.15s; position: relative; }
+        .btn-quick:active { transform: scale(0.97); }
+        .btn-act { padding: 9px 13px; border-radius: 10px; border: none; font-weight: 800; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: 0.15s; }
+        .btn-act:active { transform: scale(0.97); }
+
+        .store-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+        .stat-pill { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 12px; text-align: center; }
+        .stat-pill small { display: block; font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 2px; }
+        .stat-pill strong { font-size: 0.95rem; font-weight: 900; color: #0f172a; }
+
+        .mode-selector-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+        @media (max-width: 500px) { .mode-selector-grid { grid-template-columns: 1fr; } }
+        .mode-card-btn { padding: 12px 10px; border-radius: 12px; border: 2px solid #cbd5e1; background: #f8fafc; color: #334155; font-weight: 900; font-size: 0.82rem; cursor: pointer; text-align: center; transition: 0.15s; }
+        .mode-card-btn.active-normal { border-color: #16a34a; background: #f0fdf4; color: #15803d; }
+        .mode-card-btn.active-free { border-color: #0284c7; background: #e0f2fe; color: #0369a1; }
+        .mode-card-btn.active-blocked { border-color: #dc2626; background: #fef2f2; color: #b91c1c; }
+
+        .sub-filter-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px; }
+        .sub-chip { padding: 9px 14px; border-radius: 999px; border: 1px solid #cbd5e1; background: #f8fafc; color: #334155; font-weight: 800; font-size: 0.78rem; cursor: pointer; white-space: nowrap; transition: 0.15s; }
+        .sub-chip.active { background: var(--dark); color: #fff; border-color: var(--dark); }
+
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; }
+
+        .banner-item-row { display: grid; grid-template-columns: 140px 1fr auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--border); border-radius: 14px; margin-bottom: 10px; background: #f8fafc; }
+        @media (max-width: 600px) { .banner-item-row { grid-template-columns: 1fr; } }
+        .banner-preview { width: 140px; height: 80px; object-fit: cover; border-radius: 10px; border: 1px solid #cbd5e1; background: #e2e8f0; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 5000; display: none; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(3px); }
+        .modal-box { background: var(--white); width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; border-radius: 22px; padding: 22px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.45); }
+
+        .support-chat-msgs { height: 300px; overflow-y: auto; background: #f1f5f9; border-radius: 14px; padding: 12px; margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
+        .sup-bubble { max-width: 82%; padding: 10px 12px; border-radius: 14px; font-size: 0.85rem; font-weight: 600; line-height: 1.4; }
+        .sup-bubble.admin { align-self: flex-end; background: var(--dark); color: #fff; }
+        .sup-bubble.loja { align-self: flex-start; background: #fff; color: #0f172a; border: 1px solid var(--border); }
+        .btn-support-unread { background: #fef2f2 !important; color: #dc2626 !important; border-color: #f87171 !important; animation: pulseBorder 1.4s infinite; }
+        @keyframes pulseBorder { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+
+        .bottom-tabs { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 6px calc(8px + var(--safe-bottom)); z-index: 900; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); }
+        .tab-btn { flex: 1; background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 0.72rem; font-weight: 800; color: #64748b; cursor: pointer; padding: 6px 4px; border-radius: 12px; }
+        .tab-btn span:first-child { font-size: 1.25rem; }
+        .tab-btn.active { color: var(--primary); background: #fff1f2; }
+
+        #toast { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%) translateY(20px); background: #0f172a; color: #fff; padding: 12px 20px; border-radius: 999px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transition: 0.25s ease; z-index: 9999; text-align: center; max-width: 92vw; }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div id="toast">Aviso</div>
+
+<!-- Modal de Confirmação -->
+<div class="modal-overlay" id="confirm-modal" onclick="if(event.target===this) closeConfirm()">
+    <div class="modal-box" style="max-width: 380px; text-align: center;">
+        <div style="font-size: 2.2rem; margin-bottom: 8px;">⚠️</div>
+        <h3 style="font-weight: 900; font-size: 1.1rem; color: #0f172a; margin-bottom: 8px;">Confirmação</h3>
+        <p id="confirm-msg" style="font-size: 0.88rem; color: #475569; font-weight: 600; margin-bottom: 18px;"></p>
+        <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn-act" style="flex: 1; justify-content: center; background: #e2e8f0; color: #334155; padding: 12px;" onclick="closeConfirm()">Cancelar</button>
+            <button type="button" class="btn-act" id="confirm-yes-btn" style="flex: 1; justify-content: center; background: var(--primary); color: #fff; padding: 12px;">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Configurações da InfinitePay e Cobrança Global do Dono -->
+<div class="modal-overlay" id="modal-owner-config" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-box" style="max-width: 480px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h3 style="font-weight:900; font-size:1.15rem; color:#0f172a;">⚙️ Configurar InfinitePay & Cobrança</h3>
+            <button onclick="document.getElementById('modal-owner-config').style.display='none'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">✕</button>
+        </div>
+        <div class="input-group">
+            <label>Sua InfiniteTag (Handle sem $)</label>
+            <input type="text" id="admin-infinite-handle" placeholder="Ex: eder-garcia-gomes">
+        </div>
+        <div class="input-group">
+            <label>API Key InfinitePay (Opcional)</label>
+            <input type="text" id="admin-infinite-apikey" placeholder="inchk_...">
+        </div>
+        <div class="input-group">
+            <label>Valor Padrão da Mensalidade (R$)</label>
+            <input type="number" step="0.01" id="admin-default-fee" placeholder="Ex: 50.00">
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+            <button type="button" class="btn-act" id="btn-toggle-global-billing" style="flex:1; justify-content:center; background:#0f172a; color:#fff; padding:11px;" onclick="toggleGlobalBillingSystem()">⏸️ Pausar Cobrança Global</button>
+            <button type="button" class="btn-act" style="background:#dcfce7; color:#15803d; padding:11px;" onclick="setAllStoresBilling(true)">⚡ Ativar Todas</button>
+            <button type="button" class="btn-act" style="background:#e0f2fe; color:#0369a1; padding:11px;" onclick="setAllStoresBilling(false)">🆓 Isentar Todas</button>
+        </div>
+        <button class="btn-main" style="background:var(--success);" onclick="saveOwnerPixConfig()">💾 Salvar Configurações InfinitePay</button>
+    </div>
+</div>
+
+<!-- Modal: Central de Atualização dos Aplicativos (GitHub APK - Sem precisar mudar código de versão!) -->
+<div class="modal-overlay" id="modal-app-updates" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-box" style="max-width: 520px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h3 style="font-weight:900; font-size:1.15rem; color:#0f172a;">🚀 Disparar Atualização Automática (GitHub APK)</h3>
+            <button onclick="document.getElementById('modal-app-updates').style.display='none'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">✕</button>
+        </div>
+        <p style="font-size:0.8rem; color:#15803d; background:#f0fdf4; border:1px solid #bbf7d0; padding:10px 12px; border-radius:12px; font-weight:700; margin-bottom:14px; line-height:1.4;">
+            ✅ <b>100% Automático (Aceita Versão Nova ou Voltar Versão Anterior):</b><br>
+            Você <b>não precisa mais mudar número de versão no código</b>! Basta colar o link do arquivo <b>.apk</b> do GitHub e clicar no botão <b>🚀 Disparar</b> do aplicativo que deseja atualizar!
+        </p>
+
+        <div class="input-group" style="margin-bottom:12px;">
+            <label>📝 Mensagem que aparecerá na tela do celular</label>
+            <input type="text" id="upd-notes" placeholder="Ex: Nova atualização disponível com melhorias! Toque para instalar.">
+        </div>
+
+        <!-- Bloco 1: App do Cliente -->
+        <div style="background:#fff1f2; border:1px solid #fecdd3; border-radius:14px; padding:14px; margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div style="font-weight:900; font-size:0.9rem; color:#be123c;">🛍️ 1. Aplicativo do Cliente</div>
+                <span id="upd-cli-status-badge" style="font-size:0.7rem; font-weight:800; color:#be123c; background:#ffe4e6; padding:3px 8px; border-radius:99px;">Pronto p/ disparo</span>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+                <div class="input-group" style="width:130px; margin-bottom:0;">
+                    <label>Título (Opcional)</label>
+                    <input type="text" id="upd-cli-version-name" placeholder="Ex: V1.002">
+                </div>
+                <div class="input-group" style="flex:1; min-width:200px; margin-bottom:0;">
+                    <label>Link Direto do APK no GitHub (.apk)</label>
+                    <input type="text" id="upd-cli-url" placeholder="https://github.com/.../releases/download/.../APPCliente.apk">
+                </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button type="button" class="btn-act" style="flex:1; justify-content:center; background:#e11d48; color:#fff; padding:11px;" onclick="triggerSingleAppUpdate('CLI')">🚀 Disparar p/ Todos os Clientes Agora</button>
+                <button type="button" class="btn-act" style="background:#ffe4e6; color:#9f1239; padding:11px;" onclick="cancelSingleAppUpdate('CLI')" title="Desativar aviso de atualização">🛑 Parar</button>
+            </div>
+        </div>
+
+        <!-- Bloco 2: Painel do Lojista -->
+        <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:14px; padding:14px; margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div style="font-weight:900; font-size:0.9rem; color:#0f172a;">🏪 2. Painel Gestor (Lojista)</div>
+                <span id="upd-store-status-badge" style="font-size:0.7rem; font-weight:800; color:#334155; background:#e2e8f0; padding:3px 8px; border-radius:99px;">Pronto p/ disparo</span>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+                <div class="input-group" style="width:130px; margin-bottom:0;">
+                    <label>Título (Opcional)</label>
+                    <input type="text" id="upd-store-version-name" placeholder="Ex: V1.002">
+                </div>
+                <div class="input-group" style="flex:1; min-width:200px; margin-bottom:0;">
+                    <label>Link Direto do APK no GitHub (.apk)</label>
+                    <input type="text" id="upd-store-url" placeholder="https://github.com/.../releases/download/.../PainelLojista.apk">
+                </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button type="button" class="btn-act" style="flex:1; justify-content:center; background:#0f172a; color:#fff; padding:11px;" onclick="triggerSingleAppUpdate('STORE')">🚀 Disparar p/ Todos os Lojistas Agora</button>
+                <button type="button" class="btn-act" style="background:#e2e8f0; color:#334155; padding:11px;" onclick="cancelSingleAppUpdate('STORE')" title="Desativar aviso de atualização">🛑 Parar</button>
+            </div>
+        </div>
+
+        <!-- Bloco 3: App do Entregador -->
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div style="font-weight:900; font-size:0.9rem; color:#166534;">🛵 3. Aplicativo do Entregador</div>
+                <span id="upd-driver-status-badge" style="font-size:0.7rem; font-weight:800; color:#15803d; background:#dcfce7; padding:3px 8px; border-radius:99px;">Pronto p/ disparo</span>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+                <div class="input-group" style="width:130px; margin-bottom:0;">
+                    <label>Título (Opcional)</label>
+                    <input type="text" id="upd-driver-version-name" placeholder="Ex: V1.002">
+                </div>
+                <div class="input-group" style="flex:1; min-width:200px; margin-bottom:0;">
+                    <label>Link Direto do APK no GitHub (.apk)</label>
+                    <input type="text" id="upd-driver-url" placeholder="https://github.com/.../releases/download/.../AppEntregador.apk">
+                </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button type="button" class="btn-act" style="flex:1; justify-content:center; background:#16a34a; color:#fff; padding:11px;" onclick="triggerSingleAppUpdate('DRIVER')">🚀 Disparar p/ Todos os Entregadores Agora</button>
+                <button type="button" class="btn-act" style="background:#dcfce7; color:#166534; padding:11px;" onclick="cancelSingleAppUpdate('DRIVER')" title="Desativar aviso de atualização">🛑 Parar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Aviso de Prazo Vencido / Cobrança Exclusiva via InfinitePay (Com edição de valor ao vivo) -->
+<div class="modal-overlay" id="modal-quick-pix-charge" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-box" style="max-width: 470px; text-align: center;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span id="qpix-top-badge" class="badge" style="background:#dcfce7; color:#15803d;">⚡ COBRANÇA OFICIAL INFINITEPAY</span>
+            <button onclick="document.getElementById('modal-quick-pix-charge').style.display='none'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">✕</button>
+        </div>
+
+        <div id="qpix-expired-banner" style="display:none; background:#fef2f2; border:2px solid #fecaca; color:#991b1b; border-radius:14px; padding:12px; margin-bottom:12px; text-align:left;">
+            <div style="font-weight:900; font-size:0.9rem;">🚨 PRAZO DE ASSINATURA VENCIDO!</div>
+            <div style="font-size:0.78rem; font-weight:700; margin-top:3px;">
+                A loja foi fechada automaticamente e o <b>Painel do Lojista</b> exibe o Modal de Vencimento com o botão de pagamento da InfinitePay.
+            </div>
+        </div>
+
+        <h3 id="qpix-store-name" style="font-weight:900; font-size:1.2rem; color:#0f172a; margin-bottom:4px;">Loja</h3>
+        <p id="qpix-store-status" style="font-size:0.82rem; color:#64748b; font-weight:700; margin-bottom:12px;"></p>
+
+        <!-- Bloco Único: Checkout Oficial InfinitePay com Campo para Mudar o Valor na Hora -->
+        <div style="background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color:#fff; border-radius:16px; padding:16px; text-align:left; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-weight:900; font-size:0.88rem; color:#4ade80;">⚡ Checkout InfinitePay (PIX / Cartão)</span>
+                <span id="qpix-amount" style="background:#16a34a; color:#fff; padding:4px 10px; border-radius:999px; font-weight:900; font-size:0.85rem;">R$ 50,00</span>
+            </div>
+
+            <div style="margin-bottom:10px;">
+                <label style="display:block; font-size:0.72rem; font-weight:800; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">💵 Valor da Cobrança InfinitePay (R$):</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="number" step="0.01" min="1" id="qpix-custom-fee-input" placeholder="Ex: 50.00" style="flex:1; padding:10px 12px; border:1px solid #475569; border-radius:10px; background:#0f172a; color:#fff; font-weight:900; font-size:0.95rem; outline:none;">
+                    <button type="button" class="btn-act" id="qpix-btn-gen-infinite" style="background:#22c55e; color:#0f172a; font-weight:900; padding:10px 14px; border-radius:10px;">
+                        ⚡ Aplicar Valor & Gerar Link
+                    </button>
+                </div>
+            </div>
+
+            <label style="display:block; font-size:0.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">🔗 Link Oficial Gerado p/ Esta Loja:</label>
+            <input type="text" id="qpix-infinite-url" readonly placeholder="Clique em Aplicar Valor & Gerar Link..." style="width:100%; padding:9px 10px; border:1px solid #334155; border-radius:8px; background:#0f172a; color:#f8fafc; font-size:0.75rem; font-weight:700; margin-bottom:10px;">
+
+            <button type="button" class="btn-act" id="qpix-btn-check-infinite" style="width:100%; justify-content:center; background:#38bdf8; color:#0f172a; font-weight:900; padding:11px; border-radius:10px;">
+                🔄 Verificar se Pagou na InfinitePay (Auto +30d)
+            </button>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <button type="button" class="btn-main" style="background:var(--primary); font-size:0.88rem; padding:13px;" id="qpix-btn-force-modal">
+                🚨 Disparar Modal InfinitePay na Tela do Lojista
+            </button>
+            <button type="button" class="btn-main" style="background:#0f172a; font-size:0.88rem; padding:13px;" id="qpix-btn-panel">
+                🔔 Enviar Link InfinitePay no Chat do Painel
+            </button>
+            <button type="button" class="btn-main" style="background:#16a34a; font-size:0.88rem; padding:13px;" id="qpix-btn-wpp">
+                📲 Enviar Link InfinitePay no WhatsApp
+            </button>
+            <button type="button" class="btn-act" style="justify-content:center; background:#f1f5f9; color:#334155; padding:11px;" id="qpix-btn-copy">
+                📋 Copiar Link da InfinitePay
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Pedidos de uma Loja Específica -->
+<div class="modal-overlay" id="modal-store-orders" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-box" style="max-width: 620px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h3 id="modal-store-orders-title" style="font-weight:900; font-size:1.15rem; color:#0f172a;">🧾 Pedidos da Loja</h3>
+            <button onclick="document.getElementById('modal-store-orders').style.display='none'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">✕</button>
+        </div>
+        <div id="modal-store-orders-list"></div>
+    </div>
+</div>
+
+<!-- Modal Chat de Suporte com a Loja -->
+<div class="modal-overlay" id="modal-store-support" onclick="if(event.target===this) closeStoreSupportModal()">
+    <div class="modal-box" style="max-width: 540px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:1px solid var(--border);">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <img id="sup-modal-logo" src="" style="width:42px; height:42px; border-radius:50%; object-fit:cover; border:1px solid #cbd5e1;">
+                <div>
+                    <h3 id="sup-modal-store-name" style="font-weight:900; font-size:1.05rem; color:#0f172a;">Loja</h3>
+                    <div id="sup-modal-store-status" style="font-size:0.75rem; font-weight:700; color:#64748b;">Canal Direto com o Lojista</div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+                <button id="sup-modal-pix-btn" class="btn-act" style="background:#dcfce7; color:#15803d; border:1px solid #86efac; padding:7px 10px; font-size:0.74rem;">💠 Enviar PIX</button>
+                <button onclick="closeStoreSupportModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; margin-left:6px;">✕</button>
+            </div>
+        </div>
+        <div class="support-chat-msgs" id="sup-admin-chat-msgs"></div>
+        <div style="display:flex; gap:8px;">
+            <input type="text" id="sup-admin-chat-input" placeholder="Digite sua mensagem para a loja..." onkeydown="if(event.key==='Enter') sendAdminSupportMsg()" style="flex:1; padding:12px 14px; border:1px solid #cbd5e1; border-radius:12px; font-weight:600; outline:none;">
+            <button class="btn-act" style="background:var(--primary); color:#fff; padding:0 18px; border-radius:12px;" onclick="sendAdminSupportMsg()">Enviar</button>
+        </div>
+    </div>
+</div>
+
+<!-- TELA DE LOGIN DO SUPER ADMIN (SENHA MESTRA: 2026) -->
+<div id="admin-auth-screen">
+    <div class="auth-card">
+        <div class="crown-badge">👑</div>
+        <h2 style="font-weight:900; font-size:1.45rem; color:#0f172a; margin-bottom:6px;">Super Admin</h2>
+        <p style="color:#64748b; font-size:0.86rem; font-weight:600; margin-bottom:22px;">Controle Geral • JuabaDelivery</p>
+        <div class="input-group">
+            <label>Senha Mestra do Dono</label>
+            <input type="password" id="master-pin-input" placeholder="Digite a senha mestra..." onkeydown="if(event.key==='Enter') loginSuperAdmin()">
+        </div>
+        <p id="auth-err" style="display:none; color:var(--primary); font-size:0.8rem; font-weight:800; margin-bottom:12px;">❌ Senha incorreta!</p>
+        <button class="btn-main" id="btn-master-login" onclick="loginSuperAdmin()">Acessar Controle Geral</button>
+    </div>
+</div>
+
+<!-- CABEÇALHO PRINCIPAL -->
+<header>
+    <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:1.4rem;">👑</span>
+        <div>
+            <div style="font-weight:900; font-size:1.05rem; letter-spacing:-0.3px;"><span id="hdr-brand-p1">Juaba</span><span id="hdr-brand-p2" style="color:var(--primary);">Delivery</span> • Dono</div>
+            <div style="font-size:0.72rem; color:#94a3b8; font-weight:700;">Painel Super Admin em Tempo Real</div>
+        </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span id="global-billing-status-badge" class="badge" style="background:#dcfce7; color:#15803d; cursor:pointer;" onclick="openOwnerConfigModal()">🟢 Cobrança Ativa</span>
+        <button class="btn-act" style="background:var(--primary); color:#fff;" onclick="openAppUpdatesModal()">🚀 Atualizar Apps</button>
+        <button class="btn-act" style="background:#334155; color:#fff;" onclick="openOwnerConfigModal()">⚙️ InfinitePay</button>
+        <button class="btn-act" style="background:#1e293b; color:#cbd5e1; border:1px solid #334155;" onclick="logoutSuperAdmin()">Sair</button>
+    </div>
+</header>
+
+<!-- ABA 1: DASHBOARD DE LOJAS & MENSALIDADES -->
+<div id="sec-dashboard" class="view-section active">
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <span class="kpi-label">🏪 Lojas Cadastradas</span>
+            <span class="kpi-value" id="kpi-stores">0</span>
+            <span class="kpi-sub" id="kpi-stores-sub">0 abertas • 0 bloqueadas</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">💳 Mensalidades Previstas</span>
+            <span class="kpi-value" id="kpi-subs-total" style="color:var(--success);">R$ 0,00</span>
+            <span class="kpi-sub" id="kpi-subs-status">0 em dia • 0 vencida(s)</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">💰 Volume Vendido (GMV)</span>
+            <span class="kpi-value" id="kpi-gmv">R$ 0,00</span>
+            <span class="kpi-sub" id="kpi-orders-done">0 pedidos entregues</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">👥 Base de Clientes</span>
+            <span class="kpi-value" id="kpi-clients">0</span>
+            <span class="kpi-sub" id="kpi-products">0 produtos ativos</span>
+        </div>
+    </div>
+
+    <div class="panel-box">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">🏪 Gestão de Lojas & Assinaturas</div>
+                <p style="font-size:0.8rem; color:#64748b; font-weight:600; margin-top:3px;">Controle os dias restantes, envie cobrança via InfinitePay ou bloqueie lojas com 1 clique.</p>
+            </div>
+            <input type="text" id="search-store-input" placeholder="🔍 Buscar loja pelo nome..." oninput="renderStoresAdmin()" style="padding:10px 14px; border:1px solid #cbd5e1; border-radius:12px; font-weight:600; outline:none; min-width:240px;">
+        </div>
+
+        <div class="sub-filter-chips">
+            <button type="button" class="sub-chip active" onclick="setSubFilter('ALL', this)">📋 Todas as Lojas</button>
+            <button type="button" class="sub-chip" onclick="setSubFilter('WARNING', this)">⚠️ Perto de Vencer</button>
+            <button type="button" class="sub-chip" onclick="setSubFilter('OVERDUE', this)">🚨 Vencidas (Em Atraso)</button>
+            <button type="button" class="sub-chip" onclick="setSubFilter('PAID', this)">🟢 Em Dia</button>
+            <button type="button" class="sub-chip" onclick="setSubFilter('FREE', this)">🆓 Isentas / VIP</button>
+        </div>
+
+        <div id="admin-stores-list">Carregando lojas...</div>
+    </div>
+</div>
+
+<!-- ABA 2: BANNERS & PROPAGANDA POP-UP DE ABERTURA -->
+<div id="sec-banners" class="view-section">
+    <!-- BLOCO: MUDAR O NOME DO APLICATIVO EM TEMPO REAL -->
+    <div class="panel-box" style="border:2px solid #cbd5e1; background:#ffffff;">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">🏷️ Nome & Identidade Visual do Aplicativo</div>
+                <p style="font-size:0.82rem; color:#64748b; font-weight:600; margin-top:4px;">
+                    Altere o nome exibido no topo do App Cliente, na tela de abertura (Splash), no App do Entregador e no Painel do Lojista instantaneamente!
+                </p>
+            </div>
+            <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:10px 18px; border-radius:14px; font-size:1.25rem; font-weight:900;">
+                <span id="preview-brand-p1" style="color:#18181b;">Juaba</span><span id="preview-brand-p2" style="color:#ea1d2c;">Delivery</span>
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; align-items:end;">
+            <div class="input-group" style="margin-bottom:0;">
+                <label>1ª Parte do Nome (Cor Escura)</label>
+                <input type="text" id="app-brand-part1" placeholder="Ex: Juaba" value="Juaba" oninput="updateAppBrandPreview()">
+            </div>
+            <div class="input-group" style="margin-bottom:0;">
+                <label>2ª Parte do Nome (Cor Vermelha / Destaque)</label>
+                <input type="text" id="app-brand-part2" placeholder="Ex: Delivery (ou deixe vazio)" value="Delivery" oninput="updateAppBrandPreview()">
+            </div>
+            <button class="btn-main" style="background:#0f172a; height:48px;" onclick="saveAppBrandNameConfig()">💾 Salvar Novo Nome do App</button>
+        </div>
+    </div>
+
+    <!-- NOVO BLOCO: PROPAGANDA POP-UP AO ABRIR O APP (SEM BORDAS BRANCAS + X NO CANTO + PROGRAMAÇÃO DE DIA E HORÁRIO) -->
+    <div class="panel-box" style="border:2px solid #fecdd3; background:linear-gradient(180deg, #fff1f2 0%, #ffffff 100%);">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">🎯 Propaganda Pop-up ao Abrir o App (Tela Cheia Sem Bordas)</div>
+                <p style="font-size:0.82rem; color:#64748b; font-weight:600; margin-top:4px;">
+                    Aparece automaticamente na tela quando o cliente abre o aplicativo (apenas a imagem com um <b>✕</b> no canto superior direito). Você pode ligar/desligar quando quiser ou programar o dia e o horário exato de exibição!
+                </p>
+            </div>
+            <label style="display:inline-flex; align-items:center; gap:8px; background:#0f172a; color:#fff; padding:10px 16px; border-radius:999px; font-weight:900; font-size:0.82rem; cursor:pointer;">
+                <input type="checkbox" id="popup-promo-active" onchange="togglePopupPromoPreviewState()" style="width:18px; height:18px; accent-color:#22c55e;">
+                <span id="popup-promo-status-lbl">🔴 Desligada</span>
+            </label>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 160px 1fr; gap:16px; align-items:start;">
+            <div style="position:relative; width:100%;">
+                <img id="popup-promo-preview" src="https://placehold.co/400x500/0f172a/ffffff?text=Pop-up+App" style="width:100%; height:190px; object-fit:cover; border-radius:16px; border:2px solid #cbd5e1; background:#0f172a;" onerror="this.src='https://placehold.co/400x500/0f172a/ffffff?text=Pop-up+App'">
+                <div style="position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:50%; background:rgba(0,0,0,0.75); color:#fff; border:1.5px solid #fff; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:12px;">✕</div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <div class="input-group" style="margin-bottom:0;">
+                    <label>Imagem do Banner Pop-up (Cole o Link ou envie da Galeria)</label>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <input type="text" id="popup-promo-img" placeholder="https://... ou clique em 📁 Galeria 👉" oninput="document.getElementById('popup-promo-preview').src = this.value || 'https://placehold.co/400x500/0f172a/ffffff?text=Pop-up+App'" style="flex:1; min-width:200px;">
+                        <label class="btn-act" style="background:#0f172a; color:#fff; cursor:pointer; padding:12px 16px; margin:0;">
+                            📁 Galeria
+                            <input type="file" accept="image/*" style="display:none;" onchange="uploadPopupPromoImageFile(this)">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-bottom:0;">
+                    <label>Ao tocar na imagem, abrir qual loja? (Opcional)</label>
+                    <select id="popup-promo-store"></select>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:14px; padding:12px;">
+                    <label style="display:flex; align-items:center; gap:8px; font-weight:900; font-size:0.84rem; color:#0f172a; cursor:pointer; margin-bottom:8px;">
+                        <input type="checkbox" id="popup-promo-schedule-enabled" onchange="document.getElementById('popup-promo-schedule-box').style.display = this.checked ? 'block' : 'none'" style="width:16px; height:16px; accent-color:#ea1d2c;">
+                        ⏰ Programar Dia e Horário para Exibir Automaticamente
+                    </label>
+
+                    <div id="popup-promo-schedule-box" style="display:none; padding-top:8px; border-top:1px dashed #cbd5e1;">
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <div class="input-group" style="flex:1; min-width:140px; margin-bottom:0;">
+                                <label>📅 Data Específica (Opcional)</label>
+                                <input type="date" id="popup-promo-date">
+                            </div>
+                            <div class="input-group" style="width:125px; margin-bottom:0;">
+                                <label>🕒 Hora Início</label>
+                                <input type="time" id="popup-promo-start-time" value="08:00">
+                            </div>
+                            <div class="input-group" style="width:125px; margin-bottom:0;">
+                                <label>🕒 Hora Fim</label>
+                                <input type="time" id="popup-promo-end-time" value="23:59">
+                            </div>
+                        </div>
+
+                        <label style="display:block; font-size:0.72rem; font-weight:800; color:#475569; margin-bottom:6px; text-transform:uppercase;">Dias da Semana Permitidos (Se não escolher data específica):</label>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;" id="popup-promo-days-row">
+                            <label style="background:#fff; border:1px solid #cbd5e1; padding:6px 10px; border-radius:8px; font-weight:800; font-size:0.76rem; cursor:pointer;"><input type="checkbox" class="pop-day-cb" value="0" checked> Dom</label>
+                            <label style="background:#fff; border:1px solid #cbd5e1; padding:6px 10px; border-radius:8px; font-weight:800; font-size:0.76rem; cursor:pointer;"><input type="checkbox" class="pop-day-cb" value="1" checked> Seg</label>
+                            <label style="background:#fff; border:1px solid #cbd5e1; padding:6px 10px; border-radius:8px; font-weight:800; font-size:0.76rem; cursor:pointer;"><input type="checkbox" class="pop-day-cb" value="2" checked> Ter</label>
+                            <label style="background:#fff; border:1px solid #cbd5e1; padding:6px 10px; border-radius:8px; font-weight:800; font-size:0.76rem; cursor:pointer;"><input type="checkbox" class="pop-day-cb" value="3" checked> Qua</label>
+                            <label style="background:#fff; border:1px solid #cbd5e1; padding:6px 10px; border-radius:8px; font-weight:800; font-size:0.76rem; cursor:pointer;"><input type="checkbox" class="pop-day-cb" value="4" checked> Qui</label>
+                            <label style="background:#fff; border:1px solid #cbd5e1; padding:6px 10px; border-radius:8px; font-weight:800; font-size:0.76rem; cursor:pointer;"><input type="checkbox" class="pop-day-cb" value="5" checked> Sex</label>
+                            <label style="background:#fff; border:1px solid #cbd5e1; padding:6px 10px; border-radius:8px; font-weight:800; font-size:0.76rem; cursor:pointer;"><input type="checkbox" class="pop-day-cb" value="6" checked> Sáb</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-main" style="background:var(--primary);" onclick="savePopupPromoConfig()">💾 Salvar Propaganda Pop-up de Abertura</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-box">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">🖼️ Carrossel de Propagandas Rotativas (Topo do App Cliente)</div>
+                <p style="font-size:0.82rem; color:#64748b; font-weight:600; margin-top:4px;">Os banners giram sozinhos a cada 4 segundos, aceitam arrastar com o dedo e crescem na tela quando o cliente segura na imagem!</p>
+            </div>
+            <button class="btn-act" style="background:#0f172a; color:#fff; padding:11px 16px;" onclick="addBannerRow()">+ Adicionar Propaganda</button>
+        </div>
+        <div id="banners-list-container"></div>
+        <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;">
+            <button class="btn-main" style="background:var(--success); flex:2;" onclick="saveMarketplaceBanners()">💾 Publicar Propagandas no Aplicativo</button>
+            <button class="btn-act" style="background:#e2e8f0; color:#334155; padding:14px 18px;" onclick="resetDefaultBanners()">Restaurar Padrão</button>
+        </div>
+    </div>
+</div>
+
+<!-- ABA 3: PEDIDOS -->
+<div id="sec-pedidos" class="view-section">
+    <div class="panel-box">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">🧾 Todos os Pedidos do Aplicativo</div>
+                <p style="font-size:0.8rem; color:#64748b; font-weight:600; margin-top:3px;">Monitoramento em tempo real das vendas em todas as lojas.</p>
+            </div>
+            <select id="filter-order-status" onchange="renderGlobalOrders()" style="padding:10px 14px; border:1px solid #cbd5e1; border-radius:10px; font-weight:700; outline:none;">
+                <option value="TODOS">Todos os Status</option>
+                <option value="Novo">🔔 Novos</option>
+                <option value="Preparando">🍳 Na Cozinha</option>
+                <option value="Entrega">🛵 Em Entrega</option>
+                <option value="Concluido">✅ Concluídos</option>
+                <option value="Cancelado">❌ Cancelados</option>
+            </select>
+        </div>
+        <div id="global-orders-list">Carregando pedidos...</div>
+    </div>
+</div>
+
+<!-- ABA 4: CLIENTES -->
+<div id="sec-clientes" class="view-section">
+    <div class="panel-box">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">👥 Consumidores Cadastrados no App</div>
+                <p style="font-size:0.8rem; color:#64748b; font-weight:600; margin-top:3px;">Histórico de clientes e quantidade de pedidos realizados.</p>
+            </div>
+            <input type="text" id="search-client-input" placeholder="Buscar cliente por nome ou e-mail..." oninput="renderClientsAdmin()" style="padding:10px 14px; border:1px solid #cbd5e1; border-radius:10px; font-weight:600; outline:none; min-width:250px;">
+        </div>
+        <div id="admin-clients-list">Carregando clientes...</div>
+    </div>
+</div>
+
+<!-- MODAL SIMPLIFICADO DE EDIÇÃO DA LOJA (3 OPÇÕES DE STATUS + DIAS RESTANTES) -->
+<div class="modal-overlay" id="modal-edit-store" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h3 style="font-weight:900; font-size:1.18rem;">⚙️ Configurar Loja Parceira</h3>
+            <button onclick="document.getElementById('modal-edit-store').style.display='none'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">✕</button>
+        </div>
+        <input type="hidden" id="edit-store-id">
+        <input type="hidden" id="edit-store-mode" value="NORMAL">
+
+        <div id="modal-store-full-overview" style="margin-bottom:14px;"></div>
+
+        <label style="display:block; font-size:0.75rem; font-weight:800; color:#475569; margin-bottom:6px; text-transform:uppercase;">1. Escolha o Modo da Loja:</label>
+        <div class="mode-selector-grid">
+            <button type="button" class="mode-card-btn" id="mode-btn-normal" onclick="selectStoreEditMode('NORMAL')">
+                💳 Cobrança Normal<br><small style="font-weight:600; opacity:0.8;">Usa dias restantes</small>
+            </button>
+            <button type="button" class="mode-card-btn" id="mode-btn-free" onclick="selectStoreEditMode('FREE')">
+                🆓 Loja Isenta / VIP<br><small style="font-weight:600; opacity:0.8;">Sem cobrança</small>
+            </button>
+            <button type="button" class="mode-card-btn" id="mode-btn-blocked" onclick="selectStoreEditMode('BLOCKED')">
+                🚫 Loja Bloqueada<br><small style="font-weight:600; opacity:0.8;">Oculta no App</small>
+            </button>
+        </div>
+
+        <div id="edit-billing-fields-box" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:14px; margin-bottom:14px;">
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <div class="input-group" style="flex:1; min-width:140px; margin-bottom:8px;">
+                    <label>⏳ Dias Restantes de Acesso</label>
+                    <input type="number" id="edit-store-exp-days" placeholder="Ex: 30 (0 = Vencida)">
+                </div>
+                <div class="input-group" style="flex:1; min-width:140px; margin-bottom:8px;">
+                    <label>💵 Valor Mensalidade (R$)</label>
+                    <input type="number" step="0.01" id="edit-store-fee" placeholder="Ex: 50.00">
+                </div>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button type="button" class="btn-act" style="background:#dcfce7; color:#15803d; border:1px solid #86efac;" onclick="document.getElementById('edit-store-exp-days').value = window.DIAS_RENOVACAO_PADRAO">➕ Definir <span class="lbl-dias-padrao">30</span> Dias</button>
+                <button type="button" class="btn-act" style="background:#e0f2fe; color:#0369a1; border:1px solid #7dd3fc;" onclick="document.getElementById('edit-store-exp-days').value = window.DIAS_TESTE_GRATIS">🎁 Definir <span class="lbl-dias-teste">15</span> Dias (Teste)</button>
+                <button type="button" class="btn-act" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca;" onclick="document.getElementById('edit-store-exp-days').value = 0">🚨 Zerar Dias (Vencer Agora)</button>
+            </div>
+        </div>
+
+        <div style="border-top:1px dashed #cbd5e1; padding-top:12px; margin-bottom:12px;">
+            <div class="input-group"><label>Nome da Loja</label><input type="text" id="edit-store-name"></div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <div class="input-group" style="flex:1; min-width:130px;"><label>Nota (Ex: 5.0)</label><input type="text" id="edit-store-rating"></div>
+                <div class="input-group" style="flex:1; min-width:130px;"><label>WhatsApp da Loja</label><input type="text" id="edit-store-wpp"></div>
+            </div>
+            <div class="input-group"><label>URL da Logo</label><input type="text" id="edit-store-logo"></div>
+        </div>
+
+        <button class="btn-main" onclick="saveStoreFromAdmin()">💾 Salvar Alterações da Loja</button>
+    </div>
+</div>
+
+<nav class="bottom-tabs">
+    <button class="tab-btn active" id="atab-dashboard" onclick="switchAdminTab('dashboard')"><span>🏪</span><span>Lojas & Mensalidades</span></button>
+    <button class="tab-btn" id="atab-banners" onclick="switchAdminTab('banners')"><span>🖼️</span><span>Banners App</span></button>
+    <button class="tab-btn" id="atab-pedidos" onclick="switchAdminTab('pedidos')"><span>🧾</span><span>Pedidos</span></button>
+    <button class="tab-btn" id="atab-clientes" onclick="switchAdminTab('clientes')"><span>👥</span><span>Clientes</span></button>
+</nav>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, setPersistence, inMemoryPersistence, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // ============================================================================
+    // ⏳ CONFIGURAÇÃO DE QUANTIDADE DE DIAS PARA VENCIMENTO (MUDE AQUI!)
+    // ============================================================================
+    // 1. Quantos dias o botão verde "[ ✅ +30 Dias ]" adiciona para a loja quando ela paga:
+    window.DIAS_RENOVACAO_PADRAO = 30; // <-- Mude o número 30 para a quantidade de dias que desejar (ex: 30, 15, 7)
+
+    // 2. Quantos dias uma loja nova ganha de Teste Grátis (ou no botão de Teste):
+    window.DIAS_TESTE_GRATIS = 15;     // <-- Mude o número 15 para os dias de teste grátis (ex: 15, 7, 30)
+
+    // 3. Com quantos dias faltando o painel avisa em amarelo ("⚠️ Perto de vencer"):
+    window.DIAS_AVISO_VENCIMENTO = 5;  // <-- Quando faltar 5 dias ou menos, o card fica amarelo para você cobrar
+    // ============================================================================
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBYRRtW1_lmoEMd89f7kQ-L6IzkhTkofR4",
+        authDomain: "juaba-delivery.firebaseapp.com",
+        projectId: "juaba-delivery",
+        storageBucket: "juaba-delivery.firebasestorage.app",
+        messagingSenderId: "1048831257004",
+        appId: "1:1048831257004:web:8db55b5383206296ad3209"
+    };
+
+    const app = initializeApp(firebaseConfig, "SuperAdminApp");
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const el = (id) => document.getElementById(id);
+
+    const GOOGLE_SCRIPT_URL = localStorage.getItem('juaba_gscript_url') || "https://script.google.com/macros/s/AKfycbzPwVthaJMg8GifsEy09DapU84EJzVrpuJeyD6EB4dGyIdv3VR6yCzW_1LR_Zdg1GYb/exec";
+
+    // Atualiza os textos dos botões do modal com os dias configurados acima
+    document.querySelectorAll('.lbl-dias-padrao').forEach(n => n.innerText = window.DIAS_RENOVACAO_PADRAO);
+    document.querySelectorAll('.lbl-dias-teste').forEach(n => n.innerText = window.DIAS_TESTE_GRATIS);
+
+    // Escopo Privado Blindado: Hash da Senha Mestra (padrão "2026")
+    const _MASTER_HASH = "SkJfQURNSU5fU0FMVF8yMDI2";
+    const _TECH_EMAIL = atob("c3VwZXJhZG1pbl9tYXN0ZXJAanVhYmFkZWxpdmVyeS5jb20=");
+    const _TECH_PASS = atob("SnVhYmFATWFzdGVyQWRtaW4jMjAyNg==");
+    let _failedAttempts = 0;
+    let _lockoutUntil = 0;
+
+    window.escapeHtml = (str) => String(str ?? '')
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+    window.adminStores = [];
+    window.adminOrders = [];
+    window.adminProducts = [];
+    window.adminClients = [];
+    window.adminBlockedMap = {};
+    window.adminStoreOverrides = {};
+    window.adminSupportChats = {};
+    window.globalBillingEnabled = true;
+
+    // Configurações do Dono + InfinitePay (Salvas localmente no navegador do Dono)
+    window.adminInfiniteHandle = localStorage.getItem('juaba_owner_infinite_handle') || 'eder-garcia-gomes';
+    window.adminInfiniteApiKey = localStorage.getItem('juaba_owner_infinite_apikey') || 'inchk_-dKfPg94RbJ96iqIDsBwaSOH_-DLvv_NcxCZg11WMCU';
+    window.adminPixKey = localStorage.getItem('juaba_owner_pix_key') || '02922141209';
+    window.adminPixName = localStorage.getItem('juaba_owner_pix_name') || 'EDER GARCIA GOMES';
+    window.adminDefaultFee = parseFloat(localStorage.getItem('juaba_owner_default_fee') || '50') || 50.00;
+    window.hasHydratedOwnerPixInputs = false;
+
+    // Estados de Atualização Remota dos Aplicativos (GitHub APK)
+    window.nomeAppParte1 = localStorage.getItem('juaba_brand_p1') || 'Juaba';
+    window.nomeAppParte2 = localStorage.getItem('juaba_brand_p2') ?? 'Delivery';
+    window.versaoAtualCliente = 1;
+    window.versaoNomeCliente = '1.0';
+    window.linkAtualizacaoCliente = '';
+    window.releaseClienteMs = 0;
+    window.versaoAtualLojista = 1;
+    window.versaoNomeLojista = '1.0';
+    window.linkAtualizacaoLojista = '';
+    window.releaseLojistaMs = 0;
+    window.versaoAtualEntregador = 1;
+    window.versaoNomeEntregador = '1.0';
+    window.linkAtualizacaoEntregador = '';
+    window.releaseEntregadorMs = 0;
+    window.notasAtualizacao = 'Nova versão disponível com melhorias de desempenho e segurança!';
+
+    window.prevStoreMsgTracker = {};
+    window.prevStoreExpiredTracker = {};
+    window.activeSupportStoreId = null;
+    window.subFilterMode = 'ALL';
+    window.adminBanners = [
+        { img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80", text: "Festival de Pizzas" },
+        { img: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&q=80", text: "Artesanais Suculentos" }
+    ];
+    window.adminPopupPromo = {
+        ativo: false,
+        img: "",
+        lojaId: "",
+        agendamentoAtivo: false,
+        dataEspecifica: "",
+        diasSemana: [0, 1, 2, 3, 4, 5, 6],
+        horaInicio: "08:00",
+        horaFim: "23:59",
+        updatedAtMs: 0
+    };
+    window.confirmCallback = null;
+
+    // Monta os dados de pagamento exclusivos via InfinitePay para sincronizar com o Modal de Vencimento do Lojista
+    window.buildDefaultInfiniteAndPixForStore = (storeId, nomeLoja, valorMensal) => {
+        const handle = (window.adminInfiniteHandle || 'eder-garcia-gomes').replace(/^\$/, '').trim();
+        const val = parseFloat(valorMensal) || window.adminDefaultFee || 50.00;
+        const priceCents = Math.round(val * 100);
+        const desc = `Mensalidade JuabaDelivery (+${window.DIAS_RENOVACAO_PADRAO} dias) - ${nomeLoja || 'Loja'}`;
+        const existingOver = window.adminStoreOverrides[storeId] || {};
+        // O orderNsu leva o ID completo da loja no meio: MENSAL-<storeId>-<timestamp>
+        const orderNsu = (existingOver.ultimoOrderNsuInfinite && Number(existingOver.valorMensalidade) === val)
+            ? existingOver.ultimoOrderNsuInfinite
+            : `MENSAL-${storeId}-${Date.now()}`;
+        const redirectUrl = `${GOOGLE_SCRIPT_URL}?acao=retorno_infinitepay&lojaId=${encodeURIComponent(storeId)}&dias=${window.DIAS_RENOVACAO_PADRAO}`;
+        const itemsParam = encodeURIComponent(JSON.stringify([{ name: desc, price: priceCents, quantity: 1 }]));
+        const fallbackInfiniteUrl = (existingOver.ultimoLinkInfinite && Number(existingOver.valorMensalidade) === val)
+            ? existingOver.ultimoLinkInfinite
+            : `https://checkout.infinitepay.io/${handle}?items=${itemsParam}&order_nsu=${encodeURIComponent(orderNsu)}&redirect_url=${encodeURIComponent(redirectUrl)}`;
+
+        return {
+            valorMensalidade: val,
+            ultimoOrderNsuInfinite: orderNsu,
+            ultimoLinkInfinite: fallbackInfiniteUrl
+        };
+    };
+
+    window.copyTextToClipboard = (txt, msg) => {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txt).then(() => window.showToast(msg));
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = txt; document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            window.showToast(msg);
+        }
+    };
+
+    window.playSupportBeep = () => {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator(), gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            osc.frequency.setValueAtTime(1046.5, ctx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + 0.4);
+        } catch (e) {}
+    };
+
+    window.showToast = (msg) => {
+        const t = el('toast'); if (!t) return;
+        t.innerText = msg; t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3200);
+    };
+
+    window.askConfirm = (msg, cb) => {
+        el('confirm-msg').innerText = msg;
+        el('confirm-modal').style.display = 'flex';
+        window.confirmCallback = cb;
+    };
+    window.closeConfirm = () => { el('confirm-modal').style.display = 'none'; window.confirmCallback = null; };
+    el('confirm-yes-btn').addEventListener('click', () => { if (window.confirmCallback) window.confirmCallback(); window.closeConfirm(); });
+
+    window.openOwnerConfigModal = () => {
+        el('admin-infinite-handle').value = window.adminInfiniteHandle || 'eder-garcia-gomes';
+        el('admin-infinite-apikey').value = window.adminInfiniteApiKey || '';
+        el('admin-default-fee').value = window.adminDefaultFee || 50.00;
+        el('modal-owner-config').style.display = 'flex';
+    };
+
+    window.openAppUpdatesModal = () => {
+        if (el('upd-cli-version-name')) el('upd-cli-version-name').value = window.versaoNomeCliente || 'Nova Versão';
+        if (el('upd-cli-url')) el('upd-cli-url').value = window.linkAtualizacaoCliente || '';
+        if (el('upd-store-version-name')) el('upd-store-version-name').value = window.versaoNomeLojista || 'Nova Versão';
+        if (el('upd-store-url')) el('upd-store-url').value = window.linkAtualizacaoLojista || '';
+        if (el('upd-driver-version-name')) el('upd-driver-version-name').value = window.versaoNomeEntregador || 'Nova Versão';
+        if (el('upd-driver-url')) el('upd-driver-url').value = window.linkAtualizacaoEntregador || '';
+        if (el('upd-notes')) el('upd-notes').value = window.notasAtualizacao || 'Nova versão disponível com melhorias de desempenho e segurança!';
+
+        const fmtTime = (ms) => ms > 0 ? `Ativo (${new Date(ms).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})})` : 'Parado';
+        if (el('upd-cli-status-badge')) el('upd-cli-status-badge').innerText = fmtTime(window.releaseClienteMs);
+        if (el('upd-store-status-badge')) el('upd-store-status-badge').innerText = fmtTime(window.releaseLojistaMs);
+        if (el('upd-driver-status-badge')) el('upd-driver-status-badge').innerText = fmtTime(window.releaseEntregadorMs);
+
+        el('modal-app-updates').style.display = 'flex';
+    };
+
+    window.normalizeGithubApkUrl = (rawUrl) => {
+        let u = (rawUrl || '').trim();
+        if (!u) return '';
+        if (u.includes('github.com/') && u.includes('/blob/')) {
+            u = u.replace('/blob/', '/raw/');
+        }
+        return u;
+    };
+
+    window.triggerSingleAppUpdate = async (targetApp) => {
+        const notes = (el('upd-notes')?.value || '').trim() || 'Nova atualização disponível com melhorias de desempenho e segurança!';
+        window.notasAtualizacao = notes;
+        const nowMs = Date.now();
+        // Gera um código numérico universal alto para que até versões antigas instaladas recebam o disparo na hora
+        const universalVerCode = Math.floor(nowMs / 1000);
+
+        if (targetApp === 'CLI') {
+            const urlCli = window.normalizeGithubApkUrl(el('upd-cli-url')?.value);
+            const nameCli = (el('upd-cli-version-name')?.value || '').trim() || 'Atualização Oficial';
+            if (!urlCli.startsWith('https://') || urlCli.includes('/releases/tag/')) {
+                window.showToast("⚠️ Cole o link direto do arquivo .apk do App Cliente lá em Assets no GitHub!");
+                return;
+            }
+            window.versaoAtualCliente = universalVerCode;
+            window.versaoNomeCliente = nameCli;
+            window.linkAtualizacaoCliente = urlCli;
+            window.releaseClienteMs = nowMs;
+            await window.saveSystemConfig({
+                versaoAtualCliente: window.versaoAtualCliente,
+                versaoNomeCliente: nameCli,
+                linkAtualizacaoCliente: urlCli,
+                releaseClienteMs: nowMs,
+                notasAtualizacao: notes
+            });
+            window.showToast("🚀 Atualização disparada para todos os Clientes!");
+        } else if (targetApp === 'STORE') {
+            const urlStore = window.normalizeGithubApkUrl(el('upd-store-url')?.value);
+            const nameStore = (el('upd-store-version-name')?.value || '').trim() || 'Atualização Oficial';
+            if (!urlStore.startsWith('https://') || urlStore.includes('/releases/tag/')) {
+                window.showToast("⚠️ Cole o link direto do arquivo .apk do Painel Lojista lá em Assets no GitHub!");
+                return;
+            }
+            window.versaoAtualLojista = universalVerCode;
+            window.versaoNomeLojista = nameStore;
+            window.linkAtualizacaoLojista = urlStore;
+            window.releaseLojistaMs = nowMs;
+            await window.saveSystemConfig({
+                versaoAtualLojista: window.versaoAtualLojista,
+                versaoNomeLojista: nameStore,
+                linkAtualizacaoLojista: urlStore,
+                releaseLojistaMs: nowMs,
+                notasAtualizacao: notes
+            });
+            window.showToast("🚀 Atualização disparada para todos os Lojistas!");
+        } else if (targetApp === 'DRIVER') {
+            const urlDrv = window.normalizeGithubApkUrl(el('upd-driver-url')?.value);
+            const nameDrv = (el('upd-driver-version-name')?.value || '').trim() || 'Atualização Oficial';
+            if (!urlDrv.startsWith('https://') || urlDrv.includes('/releases/tag/')) {
+                window.showToast("⚠️ Cole o link direto do arquivo .apk do App Entregador lá em Assets no GitHub!");
+                return;
+            }
+            window.versaoAtualEntregador = universalVerCode;
+            window.versaoNomeEntregador = nameDrv;
+            window.linkAtualizacaoEntregador = urlDrv;
+            window.releaseEntregadorMs = nowMs;
+            await window.saveSystemConfig({
+                versaoAtualEntregador: window.versaoAtualEntregador,
+                versaoNomeEntregador: nameDrv,
+                linkAtualizacaoEntregador: urlDrv,
+                releaseEntregadorMs: nowMs,
+                notasAtualizacao: notes
+            });
+            window.showToast("🚀 Atualização disparada para todos os Entregadores!");
+        }
+        window.openAppUpdatesModal();
+    };
+
+    window.cancelSingleAppUpdate = async (targetApp) => {
+        if (targetApp === 'CLI') {
+            window.releaseClienteMs = 0;
+            window.linkAtualizacaoCliente = '';
+            window.versaoAtualCliente = 1;
+            await window.saveSystemConfig({ releaseClienteMs: 0, linkAtualizacaoCliente: '', versaoAtualCliente: 1 });
+            window.showToast("🛑 Disparo do App Cliente desativado.");
+        } else if (targetApp === 'STORE') {
+            window.releaseLojistaMs = 0;
+            window.linkAtualizacaoLojista = '';
+            window.versaoAtualLojista = 1;
+            await window.saveSystemConfig({ releaseLojistaMs: 0, linkAtualizacaoLojista: '', versaoAtualLojista: 1 });
+            window.showToast("🛑 Disparo do Painel Lojista desativado.");
+        } else if (targetApp === 'DRIVER') {
+            window.releaseEntregadorMs = 0;
+            window.linkAtualizacaoEntregador = '';
+            window.versaoAtualEntregador = 1;
+            await window.saveSystemConfig({ releaseEntregadorMs: 0, linkAtualizacaoEntregador: '', versaoAtualEntregador: 1 });
+            window.showToast("🛑 Disparo do App Entregador desativado.");
+        }
+        window.openAppUpdatesModal();
+    };
+
+    const ensureFirebaseAdminAuth = async () => {
+        await setPersistence(auth, inMemoryPersistence);
+        if (auth.currentUser?.email?.toLowerCase() === _TECH_EMAIL.toLowerCase()) return auth.currentUser;
+        try {
+            const cred = await signInWithEmailAndPassword(auth, _TECH_EMAIL, _TECH_PASS);
+            return cred.user;
+        } catch (e) {
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, _TECH_EMAIL, _TECH_PASS);
+                return cred.user;
+            } catch (err) { return auth.currentUser; }
+        }
+    };
+
+    window.saveSystemConfig = async (extraData = {}) => {
+        const adminUser = await ensureFirebaseAdminAuth();
+        if (!adminUser?.uid) throw new Error("Sem sessão admin");
+        const payload = {
+            isSystemConfig: true,
+            nomeAppParte1: window.nomeAppParte1 || 'Juaba',
+            nomeAppParte2: window.nomeAppParte2 ?? 'Delivery',
+            nomeAplicativo: `${window.nomeAppParte1 || 'Juaba'}${window.nomeAppParte2 ?? 'Delivery'}`,
+            billingSystemEnabled: window.globalBillingEnabled !== false,
+            adminPixKey: window.adminPixKey || '',
+            adminPixName: window.adminPixName || 'EDER GARCIA GOMES',
+            infiniteHandle: window.adminInfiniteHandle || 'eder-garcia-gomes',
+            defaultMonthlyFee: window.adminDefaultFee || 50.00,
+            diasRenovacaoPadrao: window.DIAS_RENOVACAO_PADRAO || 30,
+            versaoAtualCliente: window.versaoAtualCliente || 1,
+            versaoNomeCliente: window.versaoNomeCliente || '1.0',
+            linkAtualizacaoCliente: window.linkAtualizacaoCliente || '',
+            releaseClienteMs: window.releaseClienteMs || 0,
+            versaoAtualLojista: window.versaoAtualLojista || 1,
+            versaoNomeLojista: window.versaoNomeLojista || '1.0',
+            linkAtualizacaoLojista: window.linkAtualizacaoLojista || '',
+            releaseLojistaMs: window.releaseLojistaMs || 0,
+            notasAtualizacao: window.notasAtualizacao || '',
+            blockedStores: window.adminBlockedMap || {},
+            storeOverrides: window.adminStoreOverrides || {},
+            supportChats: window.adminSupportChats || {},
+            banners: window.adminBanners || [],
+            popupPropaganda: window.adminPopupPromo || {},
+            updatedAt: new Date().toLocaleString('pt-BR'),
+            updatedAtMs: Date.now(),
+            ...extraData
+        };
+        await setDoc(doc(db, "lojas", "_marketplace_config_"), payload, { merge: true });
+    };
+
+    window.saveOwnerPixConfig = async () => {
+        const handle = el('admin-infinite-handle').value.trim().replace(/^\$/, '') || 'eder-garcia-gomes';
+        const apiKey = el('admin-infinite-apikey').value.trim();
+        const fee = parseFloat(el('admin-default-fee').value) || 50.00;
+
+        window.adminInfiniteHandle = handle;
+        window.adminInfiniteApiKey = apiKey;
+        window.adminDefaultFee = fee;
+
+        localStorage.setItem('juaba_owner_infinite_handle', handle);
+        localStorage.setItem('juaba_owner_infinite_apikey', apiKey);
+        localStorage.setItem('juaba_owner_default_fee', String(fee));
+
+        try {
+            await window.saveSystemConfig({
+                infiniteHandle: handle,
+                defaultMonthlyFee: fee
+            });
+            el('modal-owner-config').style.display = 'none';
+            window.showToast("✅ Configurações da InfinitePay salvas!");
+        } catch (e) {
+            window.showToast("⚠️ Salvo localmente. Publique as firestore.rules com isAdmin()!");
+        }
+    };
+
+    // ============================================================================
+    // ⚡ MOTOR INFINITEPAY CHECKOUT API (GERAR LINK COM NOVO VALOR + VERIFICAR)
+    // ============================================================================
+    window.generateInfinitePayCheckoutLink = async (storeId, silent = false, customAmount = null) => {
+        const loja = window.adminStores.find(s => s.id === storeId);
+        if (!loja) return null;
+        const sub = window.getStoreSubscriptionInfo(loja);
+        const inputVal = el('qpix-custom-fee-input') ? parseFloat(el('qpix-custom-fee-input').value) : NaN;
+        const valorCobrar = (customAmount !== null && !isNaN(customAmount) && customAmount > 0)
+            ? customAmount
+            : (!isNaN(inputVal) && inputVal > 0 ? inputVal : sub.valorMensal);
+
+        const btnGen = el('qpix-btn-gen-infinite');
+        const urlInput = el('qpix-infinite-url');
+        const amountBadge = el('qpix-amount');
+        if (amountBadge) amountBadge.innerText = `R$ ${valorCobrar.toFixed(2).replace('.', ',')}`;
+
+        const handle = (window.adminInfiniteHandle || 'eder-garcia-gomes').replace(/^\$/, '').trim();
+        const orderNsu = `MENSAL-${storeId}-${Date.now()}`;
+        const priceCents = Math.round(valorCobrar * 100);
+        const desc = `Mensalidade JuabaDelivery (+${window.DIAS_RENOVACAO_PADRAO} dias) - ${loja.nome_loja || 'Loja'}`;
+
+        if (btnGen && !silent) { btnGen.disabled = true; btnGen.innerText = "⏳ Gerando..."; }
+
+        try {
+            let checkoutUrl = '';
+            let invoiceSlug = '';
+
+            // 1ª Tentativa: Via Google Apps Script (que configura webhook_url e redirect_url automáticos)
+            try {
+                const proxyResp = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        acao: "criar_link_infinitepay",
+                        lojaId: storeId,
+                        valor: valorCobrar,
+                        diasRenovacao: window.DIAS_RENOVACAO_PADRAO,
+                        orderNsu,
+                        descricao: desc,
+                        nomeLoja: loja.nome_loja || 'Loja Parceira',
+                        emailLoja: loja.email_loja || '',
+                        telefoneLoja: loja.whatsapp || ''
+                    })
+                });
+                const data = await proxyResp.json();
+                checkoutUrl = data.url || data.checkout_url || data.link || '';
+                invoiceSlug = data.slug || data.invoice_slug || '';
+            } catch (_) {}
+
+            // 2ª Tentativa: Fallback URL Universal da InfinitePay com redirect_url para o Google Apps Script
+            if (!checkoutUrl) {
+                const redirectUrl = `${GOOGLE_SCRIPT_URL}?acao=retorno_infinitepay&lojaId=${encodeURIComponent(storeId)}&dias=${window.DIAS_RENOVACAO_PADRAO}`;
+                const itemsParam = encodeURIComponent(JSON.stringify([{ name: desc, price: priceCents, quantity: 1 }]));
+                checkoutUrl = `https://checkout.infinitepay.io/${handle}?items=${itemsParam}&order_nsu=${encodeURIComponent(orderNsu)}&redirect_url=${encodeURIComponent(redirectUrl)}`;
+            }
+
+            // Salva o novo valor e o link oficial na loja para o Painel do Lojista atualizar na hora
+            const over = {
+                ...(window.adminStoreOverrides[storeId] || {}),
+                valorMensalidade: valorCobrar,
+                ultimoOrderNsuInfinite: orderNsu,
+                ultimoSlugInfinite: invoiceSlug,
+                ultimoLinkInfinite: checkoutUrl
+            };
+            window.adminStoreOverrides[storeId] = over;
+            await window.saveSystemConfig({ storeOverrides: window.adminStoreOverrides }).catch(() => {});
+            await setDoc(doc(db, "lojas", storeId), {
+                valorMensalidade: valorCobrar,
+                ultimoOrderNsuInfinite: orderNsu,
+                ultimoSlugInfinite: invoiceSlug,
+                ultimoLinkInfinite: checkoutUrl
+            }, { merge: true }).catch(() => {});
+
+            if (urlInput) urlInput.value = checkoutUrl;
+            if (!silent) window.copyTextToClipboard(checkoutUrl, `⚡ Valor R$ ${valorCobrar.toFixed(2).replace('.', ',')} e Link InfinitePay atualizados na loja!`);
+            return checkoutUrl;
+        } finally {
+            if (btnGen && !silent) { btnGen.disabled = false; btnGen.innerText = "⚡ Aplicar Valor & Gerar Link"; }
+        }
+    };
+
+    // Força a abertura imediata do Modal de Vencimento com o novo valor na tela do Painel do Lojista
+    window.triggerStorePaymentModalNow = async (storeId) => {
+        const loja = window.adminStores.find(s => s.id === storeId);
+        if (!loja) return;
+        const inputVal = el('qpix-custom-fee-input') ? parseFloat(el('qpix-custom-fee-input').value) : NaN;
+        const sub = window.getStoreSubscriptionInfo(loja);
+        const valorFinal = (!isNaN(inputVal) && inputVal > 0) ? inputVal : sub.valorMensal;
+
+        // Sempre gera um link atualizado com o valor escolhido no modal
+        const linkInf = await window.generateInfinitePayCheckoutLink(storeId, true, valorFinal) || '';
+        const payData = window.buildDefaultInfiniteAndPixForStore(storeId, loja.nome_loja, valorFinal);
+        const nowMs = Date.now();
+
+        const over = {
+            ...(window.adminStoreOverrides[storeId] || {}),
+            ...payData,
+            valorMensalidade: valorFinal,
+            ultimoLinkInfinite: linkInf || payData.ultimoLinkInfinite,
+            forcarModalCobrancaMs: nowMs
+        };
+        window.adminStoreOverrides[storeId] = over;
+        await window.saveSystemConfig({ storeOverrides: window.adminStoreOverrides });
+        await setDoc(doc(db, "lojas", storeId), {
+            ...payData,
+            valorMensalidade: valorFinal,
+            ultimoLinkInfinite: linkInf || payData.ultimoLinkInfinite,
+            forcarModalCobrancaMs: nowMs
+        }, { merge: true }).catch(() => {});
+
+        el('modal-quick-pix-charge').style.display = 'none';
+        window.showToast(`🚨 Modal InfinitePay (R$ ${valorFinal.toFixed(2).replace('.', ',')}) disparado na tela de "${loja.nome_loja}"!`);
+    };
+
+    window.checkInfinitePayPaymentStatus = async (storeId, silent = false) => {
+        const loja = window.adminStores.find(s => s.id === storeId);
+        if (!loja) return false;
+        const over = window.adminStoreOverrides[storeId] || {};
+        const orderNsu = over.ultimoOrderNsuInfinite || loja.ultimoOrderNsuInfinite || '';
+        const slug = over.ultimoSlugInfinite || loja.ultimoSlugInfinite || '';
+
+        const btnCheck = el('qpix-btn-check-infinite');
+        if (btnCheck && !silent) { btnCheck.disabled = true; btnCheck.innerText = "🔍 Consultando InfinitePay..."; }
+
+        try {
+            let isPaid = false;
+            try {
+                const proxyResp = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        acao: "verificar_pagamento_infinitepay",
+                        lojaId: storeId,
+                        orderNsu,
+                        slug,
+                        diasRenovacao: window.DIAS_RENOVACAO_PADRAO
+                    })
+                });
+                const data = await proxyResp.json();
+                isPaid = Boolean(data.paid === true || data.status === 'paid');
+            } catch (_) {}
+
+            if (isPaid) {
+                el('modal-quick-pix-charge').style.display = 'none';
+                await window.quickAddStoreDays(storeId, window.DIAS_RENOVACAO_PADRAO);
+                return true;
+            } else {
+                if (!silent) window.showToast("⏳ Pagamento ainda não consta como aprovado na InfinitePay.");
+                return false;
+            }
+        } finally {
+            if (btnCheck && !silent) { btnCheck.disabled = false; btnCheck.innerText = "🔄 Verificar se Pagou na InfinitePay (Auto +30d)"; }
+        }
+    };
+
+    window.loginSuperAdmin = async () => {
+        if (Date.now() < _lockoutUntil) {
+            const waitSec = Math.ceil((_lockoutUntil - Date.now()) / 1000);
+            window.showToast(`🔒 Aguarde ${waitSec}s para tentar novamente.`);
+            return;
+        }
+        const val = el('master-pin-input').value.trim();
+        const err = el('auth-err'), btn = el('btn-master-login');
+
+        if (btoa("JB_ADMIN_SALT_" + val) === _MASTER_HASH) {
+            _failedAttempts = 0; err.style.display = 'none';
+            btn.disabled = true; btn.innerText = "Conectando ao Banco de Dados...";
+            await ensureFirebaseAdminAuth();
+            sessionStorage.setItem('juaba_super_admin_ok', 'true');
+            el('admin-auth-screen').style.display = 'none';
+            btn.disabled = false; btn.innerText = "Acessar Controle Geral";
+            window.startAdminListeners();
+        } else {
+            _failedAttempts++;
+            err.style.display = 'block';
+            if (_failedAttempts >= 5) {
+                _lockoutUntil = Date.now() + 30000;
+                window.showToast("🔒 Muitas tentativas! Bloqueado por 30 segundos.");
+            }
+        }
+    };
+
+    window.logoutSuperAdmin = async () => {
+        sessionStorage.removeItem('juaba_super_admin_ok');
+        await signOut(auth).catch(() => {});
+        el('master-pin-input').value = '';
+        el('admin-auth-screen').style.display = 'flex';
+    };
+
+    window.switchAdminTab = (tab) => {
+        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+        el(`sec-${tab}`).classList.add('active');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        el(`atab-${tab}`).classList.add('active');
+        window.scrollTo(0, 0);
+    };
+
+    window.startAdminListeners = () => {
+        if (window.listenersStarted) return;
+        window.listenersStarted = true;
+
+        onSnapshot(collection(db, "lojas"), (snap) => {
+            window.adminStores = [];
+            let sysBlocked = {}, sysOverrides = {}, sysSupport = {}, sysBillingEnabled = true, latestConfigMs = -1;
+            let hasFixedMarketplaceDoc = false;
+
+            snap.forEach(docSnap => {
+                const data = docSnap.data();
+                if (docSnap.id === '_marketplace_config_' || data.isSystemConfig === true) {
+                    if (docSnap.id === '_marketplace_config_') hasFixedMarketplaceDoc = true;
+                    const docMs = (docSnap.id === '_marketplace_config_' ? 9000000000000 : 0) + (data.updatedAtMs || 0);
+                    if (docMs >= latestConfigMs) {
+                        latestConfigMs = docMs;
+                        if (data.billingSystemEnabled !== undefined) sysBillingEnabled = Boolean(data.billingSystemEnabled);
+                        if (Array.isArray(data.banners) && data.banners.length) window.adminBanners = data.banners;
+                        if (data.popupPropaganda && typeof data.popupPropaganda === 'object') {
+                            window.adminPopupPromo = {
+                                ativo: Boolean(data.popupPropaganda.ativo),
+                                img: data.popupPropaganda.img || '',
+                                lojaId: data.popupPropaganda.lojaId || '',
+                                agendamentoAtivo: Boolean(data.popupPropaganda.agendamentoAtivo),
+                                dataEspecifica: data.popupPropaganda.dataEspecifica || '',
+                                diasSemana: Array.isArray(data.popupPropaganda.diasSemana) ? data.popupPropaganda.diasSemana.map(Number) : [0,1,2,3,4,5,6],
+                                horaInicio: data.popupPropaganda.horaInicio || '08:00',
+                                horaFim: data.popupPropaganda.horaFim || '23:59',
+                                updatedAtMs: Number(data.popupPropaganda.updatedAtMs) || 0
+                            };
+                        }
+                        if (data.blockedStores) sysBlocked = { ...data.blockedStores };
+                        if (data.storeOverrides) sysOverrides = { ...data.storeOverrides };
+                        if (data.supportChats) sysSupport = { ...data.supportChats };
+                        if (data.adminPixKey) window.adminPixKey = data.adminPixKey;
+                        if (data.adminPixName) window.adminPixName = data.adminPixName;
+                        if (data.infiniteHandle) window.adminInfiniteHandle = data.infiniteHandle;
+                        if (data.defaultMonthlyFee) window.adminDefaultFee = parseFloat(data.defaultMonthlyFee) || 50.00;
+                        if (data.nomeAppParte1 !== undefined) window.nomeAppParte1 = String(data.nomeAppParte1 || 'Juaba');
+                        if (data.nomeAppParte2 !== undefined) window.nomeAppParte2 = String(data.nomeAppParte2 ?? '');
+                        if (data.versaoAtualCliente !== undefined) window.versaoAtualCliente = parseInt(data.versaoAtualCliente, 10) || 1;
+                        if (data.versaoNomeCliente !== undefined) window.versaoNomeCliente = data.versaoNomeCliente || '1.0';
+                        if (data.linkAtualizacaoCliente !== undefined) window.linkAtualizacaoCliente = data.linkAtualizacaoCliente || '';
+                        if (data.releaseClienteMs !== undefined) window.releaseClienteMs = Number(data.releaseClienteMs) || 0;
+                        if (data.versaoAtualLojista !== undefined) window.versaoAtualLojista = parseInt(data.versaoAtualLojista, 10) || 1;
+                        if (data.versaoNomeLojista !== undefined) window.versaoNomeLojista = data.versaoNomeLojista || '1.0';
+                        if (data.linkAtualizacaoLojista !== undefined) window.linkAtualizacaoLojista = data.linkAtualizacaoLojista || '';
+                        if (data.releaseLojistaMs !== undefined) window.releaseLojistaMs = Number(data.releaseLojistaMs) || 0;
+                        if (data.notasAtualizacao !== undefined) window.notasAtualizacao = data.notasAtualizacao || '';
+                    }
+                }
+            });
+
+            if (!window.hasHydratedOwnerPixInputs) {
+                window.hasHydratedOwnerPixInputs = true;
+                if (el('admin-pix-key')) el('admin-pix-key').value = window.adminPixKey || '';
+                if (el('admin-pix-name')) el('admin-pix-name').value = window.adminPixName || 'EDER GARCIA GOMES';
+                if (el('admin-default-fee')) el('admin-default-fee').value = window.adminDefaultFee || 50.00;
+            }
+
+            window.globalBillingEnabled = sysBillingEnabled;
+            window.adminBlockedMap = sysBlocked;
+            window.adminStoreOverrides = sysOverrides;
+            window.adminSupportChats = sysSupport;
+            window.renderGlobalBillingBar();
+            window.renderAppBrandEditor();
+            window.renderBannersEditor();
+            window.renderPopupPromoEditor();
+
+            if (!hasFixedMarketplaceDoc && latestConfigMs > -1) {
+                window.saveSystemConfig().catch(() => {});
+            }
+
+            snap.forEach(docSnap => {
+                const data = docSnap.id !== '_marketplace_config_' ? docSnap.data() : null;
+                if (data && !data.isSystemConfig) {
+                    const over = window.adminStoreOverrides[docSnap.id] || {};
+                    const isBlocked = window.adminBlockedMap[docSnap.id] ?? (data.bloqueada === true || String(data.bloqueada).toLowerCase() === 'true');
+                    const isOpenDirect = data.aberto !== undefined ? data.aberto : over.aberto;
+                    const logoDirect = (data.logo_loja && String(data.logo_loja).trim() !== '') ? data.logo_loja : over.logo_loja;
+                    const nomeDirect = (data.nome_loja && String(data.nome_loja).trim() !== '') ? data.nome_loja : over.nome_loja;
+                    const storeObj = {
+                        id: docSnap.id,
+                        ...over,
+                        ...data,
+                        nome_loja: nomeDirect,
+                        logo_loja: logoDirect,
+                        aberto: isOpenDirect,
+                        bloqueada: isBlocked,
+                        expiraEmMs: over.expiraEmMs !== undefined ? over.expiraEmMs : data.expiraEmMs,
+                        cobrancaAtiva: over.cobrancaAtiva !== undefined ? over.cobrancaAtiva : data.cobrancaAtiva,
+                        valorMensalidade: over.valorMensalidade !== undefined ? over.valorMensalidade : data.valorMensalidade,
+                        nota: over.nota !== undefined ? over.nota : data.nota
+                    };
+                    window.adminStores.push(storeObj);
+
+                    const lastMs = data.lastLojaMsgMs || 0;
+                    if (window.prevStoreMsgTracker[docSnap.id] !== undefined && lastMs > window.prevStoreMsgTracker[docSnap.id]) {
+                        window.playSupportBeep();
+                        window.showToast(`🔔 Nova mensagem da loja "${storeObj.nome_loja || 'Loja'}"!`);
+                    }
+                    window.prevStoreMsgTracker[docSnap.id] = lastMs;
+
+                    const cobrancaAtiva = window.globalBillingEnabled !== false && !(storeObj.cobrancaAtiva === false || String(storeObj.cobrancaAtiva).toLowerCase() === 'false');
+                    const expiraMs = Number(storeObj.expiraEmMs) || 0;
+                    const isExpiredNow = cobrancaAtiva && Boolean(expiraMs > 0 && Date.now() > expiraMs);
+                    // Quando o prazo da loja vence em tempo real, toca o alerta, gera o link InfinitePay + PIX e abre o modal de aviso!
+                    if (window.prevStoreExpiredTracker[docSnap.id] === false && isExpiredNow === true) {
+                        window.playSupportBeep();
+                        window.showToast(`🚨 O prazo da loja "${storeObj.nome_loja || 'Loja'}" venceu!`);
+                        window.generateInfinitePayCheckoutLink(docSnap.id, true).then(() => {
+                            window.openQuickPixChargeModal(docSnap.id);
+                        });
+                    }
+                    window.prevStoreExpiredTracker[docSnap.id] = isExpiredNow;
+                }
+            });
+
+            window.updateDashboardKPIs();
+            window.renderStoresAdmin();
+            window.renderBannersEditor();
+            window.renderPopupPromoEditor();
+            window.renderGlobalOrders();
+            window.renderClientsAdmin();
+            if (window.activeSupportStoreId) window.renderAdminSupportMessages(window.activeSupportStoreId);
+        }, () => {});
+
+        onSnapshot(collection(db, "pedidos"), (snap) => {
+            window.adminOrders = [];
+            snap.forEach(d => {
+                const data = d.data();
+                if (!data.isUserProfileDoc && !d.id.startsWith('user_profile_')) window.adminOrders.push({ id: d.id, ...data });
+            });
+            window.updateDashboardKPIs();
+            window.renderStoresAdmin();
+            window.renderGlobalOrders();
+            window.renderClientsAdmin();
+        }, () => {});
+
+        onSnapshot(collection(db, "produtos"), (snap) => {
+            window.adminProducts = [];
+            snap.forEach(d => window.adminProducts.push({ id: d.id, ...d.data() }));
+            window.updateDashboardKPIs();
+            window.renderStoresAdmin();
+        }, () => {});
+
+        onSnapshot(collection(db, "usuario"), (snap) => {
+            window.adminClients = [];
+            snap.forEach(d => window.adminClients.push({ id: d.id, ...d.data() }));
+            window.updateDashboardKPIs();
+            window.renderClientsAdmin();
+        }, () => {});
+    };
+
+    window.parseMoney = (str) => parseFloat(String(str || '0').replace('R$', '').replace(/\./g, '').replace(',', '.').trim()) || 0;
+    window.isOrderDone = (status) => ['concluido', 'entregue'].includes(String(status || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+
+    window.isStoreOpenNowAdmin = (loja) => {
+        if (!loja) return false;
+        const cobrancaAtiva = window.globalBillingEnabled !== false && !(loja.cobrancaAtiva === false || String(loja.cobrancaAtiva).toLowerCase() === 'false');
+        const expiraMs = Number(loja.expiraEmMs) || 0;
+        if (cobrancaAtiva && (expiraMs > 0 && Date.now() > expiraMs)) return false;
+        if (loja.aberto === false || String(loja.aberto).toLowerCase() === 'false') return false;
+        if (!loja.horarioAutoAtivo) return true;
+
+        const abreStr = String(loja.horarioAbre || '').trim(), fechaStr = String(loja.horarioFecha || '').trim();
+        if (!abreStr || !fechaStr) return true;
+        const now = new Date(), curDay = now.getDay(), prevDay = (curDay + 6) % 7;
+        const dias = Array.isArray(loja.diasFuncionamento) ? loja.diasFuncionamento.map(Number) : [0,1,2,3,4,5,6];
+        const [aH, aM] = abreStr.split(':').map(Number), [fH, fM] = fechaStr.split(':').map(Number);
+        if (isNaN(aH) || isNaN(fH)) return true;
+        const nowMins = now.getHours() * 60 + now.getMinutes(), aMins = aH * 60 + (aM || 0), fMins = fH * 60 + (fM || 0);
+        if (aMins === fMins) return dias.includes(curDay);
+        return aMins < fMins ? (dias.includes(curDay) && nowMins >= aMins && nowMins < fMins) : (nowMins >= aMins ? dias.includes(curDay) : (nowMins < fMins ? dias.includes(prevDay) : false));
+    };
+
+    window.renderGlobalBillingBar = () => {
+        const badge = el('global-billing-status-badge'), btn = el('btn-toggle-global-billing');
+        if (!badge || !btn) return;
+        const active = window.globalBillingEnabled !== false;
+        badge.style.background = active ? '#dcfce7' : '#fef3c7';
+        badge.style.color = active ? '#15803d' : '#b45309';
+        badge.innerText = active ? '🟢 Cobrança Ativa' : '⚪ Cobrança Pausada';
+        btn.style.background = active ? '#0f172a' : '#16a34a';
+        btn.innerText = active ? '⏸️ Pausar Cobrança p/ Todas' : '▶️ Reativar Cobrança Global';
+    };
+
+    window.toggleGlobalBillingSystem = () => {
+        const nextState = window.globalBillingEnabled === false;
+        window.askConfirm(nextState ? "Deseja ATIVAR o Sistema de Cobrança?" : "Deseja PAUSAR o Sistema de Cobrança para todas as lojas?", async () => {
+            window.globalBillingEnabled = nextState;
+            window.renderGlobalBillingBar();
+            try {
+                await window.saveSystemConfig({ billingSystemEnabled: nextState });
+                window.showToast(nextState ? "🟢 Cobrança ATIVADA!" : "⚪ Cobrança PAUSADA!");
+            } catch (e) { window.showToast("⚠️ Erro ao atualizar."); }
+        });
+    };
+
+    window.setAllStoresBilling = (enableBilling) => {
+        window.askConfirm(enableBilling ? "Ativar cobrança em TODAS as lojas?" : "Isentar TODAS as lojas de cobrança?", async () => {
+            window.globalBillingEnabled = enableBilling;
+            window.adminStores.forEach(s => {
+                const over = { ...(window.adminStoreOverrides[s.id] || {}), cobrancaAtiva: enableBilling };
+                if (!enableBilling) over.contaExpirada = false;
+                window.adminStoreOverrides[s.id] = over;
+                setDoc(doc(db, "lojas", s.id), { cobrancaAtiva: enableBilling, ...(enableBilling ? {} : { contaExpirada: false }) }, { merge: true }).catch(() => {});
+            });
+            window.renderGlobalBillingBar();
+            try {
+                await window.saveSystemConfig({ billingSystemEnabled: enableBilling, storeOverrides: window.adminStoreOverrides });
+                el('modal-owner-config').style.display = 'none';
+                window.showToast(enableBilling ? "⚡ Cobrança ativada em todas!" : "🆓 Todas as lojas isentas!");
+            } catch (e) { window.showToast("⚠️ Erro ao aplicar alteração."); }
+        });
+    };
+
+    // ============================================================================
+    // 🎯 RELÓGIO ÚNICO DE ASSINATURA (USANDO APENAS "DIAS RESTANTES")
+    // ============================================================================
+    window.getStoreSubscriptionInfo = (loja) => {
+        const now = new Date();
+        const mesAtual = String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear();
+        const valorMensal = (loja.valorMensalidade !== undefined && loja.valorMensalidade !== '')
+            ? (parseFloat(loja.valorMensalidade) || 0)
+            : (window.adminDefaultFee || 50.00);
+
+        const criadoMs = Number(loja.criadoEmMs) || Date.now();
+        // <-- ONDE CALCULA O VENCIMENTO PADRÃO SE A LOJA FOR NOVA (USA DIAS_RENOVACAO_PADRAO * 86400000 ms)
+        const expiraMs = Number(loja.expiraEmMs) || (criadoMs + (window.DIAS_RENOVACAO_PADRAO * 86400000));
+        const dataExpiracao = new Date(expiraMs).toLocaleDateString('pt-BR');
+        const diffMs = expiraMs - Date.now();
+        const diasRestantesTimer = Math.max(0, Math.ceil(diffMs / 86400000));
+
+        const storeBillingEnabled = !(loja.cobrancaAtiva === false || String(loja.cobrancaAtiva).toLowerCase() === 'false');
+        const effectiveBillingActive = (window.globalBillingEnabled !== false) && storeBillingEnabled;
+        const isTimerExpired = effectiveBillingActive && Boolean(diffMs <= 0);
+
+        let state = 'PAID', badgeText = '', cardBorderClass = 'paid';
+        if (!effectiveBillingActive) {
+            state = 'FREE';
+            cardBorderClass = 'free';
+            badgeText = `🆓 Sem cobrança (Loja Isenta / Acesso Livre)`;
+        } else if (isTimerExpired || diasRestantesTimer <= 0) {
+            state = 'OVERDUE';
+            cardBorderClass = 'overdue';
+            badgeText = `🚨 Vencida em ${dataExpiracao} • Loja fechada automaticamente`;
+        } else if (diasRestantesTimer <= window.DIAS_AVISO_VENCIMENTO) {
+            // <-- USA window.DIAS_AVISO_VENCIMENTO (padrão: 5 dias ou menos)
+            state = 'WARNING';
+            cardBorderClass = 'warning';
+            badgeText = `⚠️ Vence em ${diasRestantesTimer} dia(s) (${dataExpiracao}) • Hora de cobrar`;
+        } else {
+            state = 'PAID';
+            cardBorderClass = 'paid';
+            badgeText = `🟢 Em dia • Restam ${diasRestantesTimer} dias (Vence em ${dataExpiracao})`;
+        }
+
+        return {
+            mesAtual,
+            valorMensal,
+            dataExpiracao,
+            diasRestantesTimer,
+            isTimerExpired,
+            storeBillingEnabled,
+            effectiveBillingActive,
+            state,
+            cardBorderClass,
+            badgeText
+        };
+    };
+
+    window.setSubFilter = (mode, btnEl) => {
+        window.subFilterMode = mode;
+        document.querySelectorAll('.sub-filter-chips .sub-chip').forEach(b => b.classList.remove('active'));
+        if (btnEl) btnEl.classList.add('active');
+        window.renderStoresAdmin();
+    };
+
+    // ============================================================================
+    // ✅ FUNÇÃO DE 1 CLIQUE PARA ADICIONAR DIAS DE ACESSO À LOJA (EX: +30 DIAS)
+    // ============================================================================
+    window.quickAddStoreDays = async (storeId, diasParaAdicionar = window.DIAS_RENOVACAO_PADRAO) => {
+        const loja = window.adminStores.find(s => s.id === storeId);
+        if (!loja) return;
+
+        // Se a loja ainda tiver dias sobrando, soma em cima da data atual de vencimento; se já venceu, soma a partir de hoje:
+        const baseMs = Math.max(Date.now(), Number(loja.expiraEmMs) || 0);
+        // <-- CÁLCULO QUE TRANSFORMA OS DIAS EM MILISSEGUNDOS (dias * 86400000):
+        const novaExpMs = baseMs + (diasParaAdicionar * 86400000);
+        const novaDataStr = new Date(novaExpMs).toLocaleDateString('pt-BR');
+        const hojeStr = new Date().toLocaleDateString('pt-BR');
+        const now = new Date();
+        const mesAtual = String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear();
+
+        const over = {
+            ...(window.adminStoreOverrides[storeId] || {}),
+            cobrancaAtiva: true,
+            ultimoMesPago: mesAtual,
+            dataUltimoPagamento: hojeStr,
+            expiraEmMs: novaExpMs,
+            contaExpirada: false
+        };
+        delete over.aberto;
+        window.adminStoreOverrides[storeId] = over;
+
+        try {
+            await window.saveSystemConfig({ storeOverrides: window.adminStoreOverrides });
+            await setDoc(doc(db, "lojas", storeId), {
+                cobrancaAtiva: true,
+                ultimoMesPago: mesAtual,
+                dataUltimoPagamento: hojeStr,
+                expiraEmMs: novaExpMs,
+                contaExpirada: false,
+                aberto: true
+            }, { merge: true }).catch(() => {});
+
+            window.renderStoreModalOverview(storeId);
+            window.showToast(`✅ +${diasParaAdicionar} dias liberados para "${loja.nome_loja}" (Vence em ${novaDataStr})!`);
+        } catch (e) {
+            window.showToast("⚠️ Erro ao renovar. Verifique se publicou as firestore.rules!");
+        }
+    };
+
+    // Abre o modal de aviso de vencimento / cobrança rápida exclusivo via InfinitePay
+    window.openQuickPixChargeModal = (storeId) => {
+        const loja = window.adminStores.find(s => s.id === storeId);
+        if (!loja) return;
+        const sub = window.getStoreSubscriptionInfo(loja);
+        const valorFmt = `R$ ${sub.valorMensal.toFixed(2).replace('.', ',')}`;
+        const payData = window.buildDefaultInfiniteAndPixForStore(storeId, loja.nome_loja, sub.valorMensal);
+
+        const expBanner = el('qpix-expired-banner');
+        const topBadge = el('qpix-top-badge');
+        if (sub.state === 'OVERDUE') {
+            if (expBanner) expBanner.style.display = 'block';
+            if (topBadge) {
+                topBadge.style.background = '#fee2e2';
+                topBadge.style.color = '#991b1b';
+                topBadge.innerText = '🚨 CONTA VENCIDA • CHECKOUT INFINITEPAY';
+            }
+        } else {
+            if (expBanner) expBanner.style.display = 'none';
+            if (topBadge) {
+                topBadge.style.background = '#dcfce7';
+                topBadge.style.color = '#15803d';
+                topBadge.innerText = '⚡ COBRANÇA OFICIAL INFINITEPAY';
+            }
+        }
+
+        el('qpix-store-name').innerText = `🏪 ${loja.nome_loja || 'Loja Parceira'}`;
+        el('qpix-store-status').innerText = sub.badgeText;
+        el('qpix-amount').innerText = valorFmt;
+        if (el('qpix-custom-fee-input')) el('qpix-custom-fee-input').value = sub.valorMensal.toFixed(2);
+        el('qpix-infinite-url').value = payData.ultimoLinkInfinite;
+
+        el('qpix-btn-gen-infinite').onclick = () => window.generateInfinitePayCheckoutLink(storeId, false);
+        el('qpix-btn-check-infinite').onclick = () => window.checkInfinitePayPaymentStatus(storeId, false);
+        el('qpix-btn-force-modal').onclick = () => window.triggerStorePaymentModalNow(storeId);
+
+        el('qpix-btn-panel').onclick = async () => {
+            const inputVal = el('qpix-custom-fee-input') ? parseFloat(el('qpix-custom-fee-input').value) : sub.valorMensal;
+            const linkInf = await window.generateInfinitePayCheckoutLink(storeId, true, inputVal) || el('qpix-infinite-url').value.trim();
+            el('modal-quick-pix-charge').style.display = 'none';
+            window.sendBillingReminder(storeId, linkInf, inputVal);
+        };
+        el('qpix-btn-wpp').onclick = async () => {
+            const inputVal = el('qpix-custom-fee-input') ? parseFloat(el('qpix-custom-fee-input').value) : sub.valorMensal;
+            const linkInf = await window.generateInfinitePayCheckoutLink(storeId, true, inputVal) || el('qpix-infinite-url').value.trim();
+            el('modal-quick-pix-charge').style.display = 'none';
+            window.sendBillingViaWhatsApp(storeId, linkInf, inputVal);
+        };
+        el('qpix-btn-copy').onclick = () => {
+            const linkInf = el('qpix-infinite-url').value.trim();
+            window.copyTextToClipboard(linkInf || payData.ultimoLinkInfinite, "✅ Link da InfinitePay copiado!");
+        };
+
+        el('modal-quick-pix-charge').style.display = 'flex';
+    };
+
+    // Envia Cobrança + Link Oficial InfinitePay direto para o botão "👑 Suporte" no Painel Kotlin do Lojista
+    window.sendBillingReminder = async (storeId, infiniteCheckoutUrl = '', customAmount = null) => {
+        const loja = window.adminStores.find(s => s.id === storeId); if (!loja) return;
+        const sub = window.getStoreSubscriptionInfo(loja);
+        const val = (customAmount !== null && !isNaN(customAmount) && customAmount > 0) ? customAmount : sub.valorMensal;
+        const valorFmt = `R$ ${val.toFixed(2).replace('.', ',')}`;
+        const payData = window.buildDefaultInfiniteAndPixForStore(storeId, loja.nome_loja, val);
+        const linkInf = infiniteCheckoutUrl || payData.ultimoLinkInfinite;
+
+        let textoAviso = `💳 MENSALIDADE JUABADELIVERY — Olá, ${loja.nome_loja || 'Parceiro'}! Sua assinatura mensal (${valorFmt}, vencimento em ${sub.dataExpiracao}) está disponível para renovação (+${window.DIAS_RENOVACAO_PADRAO} dias).\n\n⚡ Pague com PIX (liberação automática) ou Cartão pelo Link Oficial da InfinitePay:\n${linkInf}`;
+
+        if (!window.adminSupportChats[storeId]) window.adminSupportChats[storeId] = { messages: [], lastAdminReadMs: Date.now() };
+        window.adminSupportChats[storeId].messages.push({
+            id: 'adm_' + Date.now(),
+            sender: 'admin',
+            text: textoAviso,
+            time: new Date().toTimeString().slice(0,5),
+            ts: Date.now()
+        });
+        window.adminSupportChats[storeId].lastAdminMsgMs = Date.now();
+        window.adminStoreOverrides[storeId] = {
+            ...(window.adminStoreOverrides[storeId] || {}),
+            ...payData,
+            valorMensalidade: val,
+            ultimoLinkInfinite: linkInf
+        };
+        await window.saveSystemConfig({
+            supportChats: window.adminSupportChats,
+            storeOverrides: window.adminStoreOverrides
+        });
+        if (window.activeSupportStoreId === storeId) window.renderAdminSupportMessages(storeId);
+        window.showToast(`🔔 Link InfinitePay enviado para o Painel de "${loja.nome_loja}"!`);
+    };
+
+    // Envia Cobrança + Link Oficial InfinitePay direto no WhatsApp do Lojista
+    window.sendBillingViaWhatsApp = (storeId, infiniteCheckoutUrl = '', customAmount = null) => {
+        const loja = window.adminStores.find(s => s.id === storeId); if (!loja) return;
+        const wppClean = String(loja.whatsapp || '').replace(/\D/g, '');
+        if (wppClean.length < 8) {
+            window.showToast("⚠️ Esta loja não cadastrou número de WhatsApp.");
+            return;
+        }
+        const sub = window.getStoreSubscriptionInfo(loja);
+        const val = (customAmount !== null && !isNaN(customAmount) && customAmount > 0) ? customAmount : sub.valorMensal;
+        const valorFmt = `R$ ${val.toFixed(2).replace('.', ',')}`;
+        const payData = window.buildDefaultInfiniteAndPixForStore(storeId, loja.nome_loja, val);
+        const linkInf = infiniteCheckoutUrl || payData.ultimoLinkInfinite;
+
+        let msg = `Olá, *${loja.nome_loja || 'Parceiro'}*! 👑\nAqui é da administração do *JuabaDelivery*.\n\n`;
+        msg += `Segue o link oficial para renovação da mensalidade do seu Painel Gestor (+${window.DIAS_RENOVACAO_PADRAO} dias):\n`;
+        msg += `• *Valor:* ${valorFmt}\n`;
+        msg += `• *Vencimento:* ${sub.dataExpiracao}\n\n`;
+        msg += `⚡ *Pague com PIX (liberação automática) ou Cartão na InfinitePay:*\n${linkInf}`;
+
+        const phone = wppClean.startsWith('55') ? wppClean : '55' + wppClean;
+        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    };
+
+    window.updateDashboardKPIs = () => {
+        const totalStores = window.adminStores.length;
+        const blockedStores = window.adminStores.filter(s => s.bloqueada).length;
+        const openStores = window.adminStores.filter(s => window.isStoreOpenNowAdmin(s) && !s.bloqueada).length;
+        el('kpi-stores').innerText = totalStores;
+        el('kpi-stores-sub').innerText = `${openStores} abertas • ${blockedStores} bloqueadas`;
+
+        let subsExpected = 0, subsOkCount = 0, subsOverdueCount = 0;
+        window.adminStores.forEach(s => {
+            const sub = window.getStoreSubscriptionInfo(s);
+            if (sub.effectiveBillingActive) {
+                subsExpected += sub.valorMensal;
+                if (sub.state === 'OVERDUE') subsOverdueCount++;
+                else subsOkCount++;
+            }
+        });
+        el('kpi-subs-total').innerText = `R$ ${subsExpected.toFixed(2).replace('.', ',')}`;
+        el('kpi-subs-status').innerText = `${subsOkCount} em dia • ${subsOverdueCount} vencida(s)`;
+
+        let gmv = 0, doneCount = 0;
+        window.adminOrders.forEach(o => {
+            if (window.isOrderDone(o.status)) { gmv += window.parseMoney(o.total); doneCount++; }
+        });
+
+        el('kpi-gmv').innerText = `R$ ${gmv.toFixed(2).replace('.', ',')}`;
+        el('kpi-orders-done').innerText = `${doneCount} pedidos entregues`;
+        el('kpi-clients').innerText = window.getMergedClientsList().length;
+        el('kpi-products').innerText = `${window.adminProducts.length} produtos ativos`;
+    };
+
+    window.renderStoresAdmin = () => {
+        const box = el('admin-stores-list');
+        const term = (el('search-store-input').value || '').toLowerCase().trim();
+        let filtered = window.adminStores.filter(s => !term || (s.nome_loja && s.nome_loja.toLowerCase().includes(term)));
+
+        if (window.subFilterMode !== 'ALL') {
+            filtered = filtered.filter(s => {
+                const sub = window.getStoreSubscriptionInfo(s);
+                return sub.state === window.subFilterMode;
+            });
+        }
+
+        if (!filtered.length) {
+            box.innerHTML = `<p style="text-align:center; padding:30px; color:#64748b; font-weight:700;">Nenhuma loja encontrada para este filtro.</p>`;
+            return;
+        }
+
+        box.innerHTML = filtered.map(loja => {
+            const isOpen = window.isStoreOpenNowAdmin(loja);
+            const isBlocked = Boolean(loja.bloqueada);
+            const sub = window.getStoreSubscriptionInfo(loja);
+            const lastReadMs = window.adminSupportChats[loja.id]?.lastAdminReadMs || 0;
+            const unreadMsgs = (Array.isArray(loja.suporteChatLoja) ? loja.suporteChatLoja : []).filter(m => (m.ts || 0) > lastReadMs);
+            const hasUnread = unreadMsgs.length > 0;
+            const doneCount = window.adminOrders.filter(o => o.lojaId === loja.id && window.isOrderDone(o.status)).length;
+            const statusIcon = isBlocked ? '🚫' : (isOpen ? '🟢' : '🔴');
+
+            return `
+            <div class="store-admin-card ${isBlocked ? 'blocked' : sub.cardBorderClass}">
+                <div class="store-top-row" onclick="openEditStoreModal('${loja.id}')">
+                    <div class="store-left">
+                        <img src="${window.escapeHtml(loja.logo_loja || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150')}" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150'">
+                        <div style="min-width:0; flex:1;">
+                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                <span style="font-weight:900; font-size:1.05rem; color:#0f172a;">${statusIcon} ${window.escapeHtml(loja.nome_loja || 'Loja Sem Nome')}</span>
+                                <span class="badge" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;">R$ ${sub.valorMensal.toFixed(2).replace('.', ',')}/mês</span>
+                                ${isBlocked ? `<span class="badge" style="background:#dc2626; color:#fff;">BLOQUEADA NO APP</span>` : ''}
+                            </div>
+                            <div style="font-size:0.8rem; color:#334155; font-weight:800; margin-top:4px;">
+                                ${sub.badgeText} • 🧾 ${doneCount} entregue(s)
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-act" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; flex-shrink:0;">
+                        ⚙️ Editar
+                    </button>
+                </div>
+
+                <!-- Botões de Ação de 1 Clique Direto no Card -->
+                <div class="store-quick-actions">
+                    <button type="button" class="btn-quick" style="background:#dcfce7; color:#15803d; border-color:#86efac;" onclick="quickAddStoreDays('${loja.id}', window.DIAS_RENOVACAO_PADRAO)">
+                        ✅ +${window.DIAS_RENOVACAO_PADRAO} Dias
+                    </button>
+                    <button type="button" class="btn-quick" style="background:${sub.state === 'OVERDUE' ? '#fee2e2' : '#fef9c3'}; color:${sub.state === 'OVERDUE' ? '#991b1b' : '#854d0e'}; border-color:${sub.state === 'OVERDUE' ? '#fecaca' : '#fde047'};" onclick="openQuickPixChargeModal('${loja.id}')">
+                        ${sub.state === 'OVERDUE' ? '🚨 Cobrar InfinitePay' : '⚡ InfinitePay'}
+                    </button>
+                    <button type="button" class="btn-quick ${hasUnread ? 'btn-support-unread' : ''}" style="background:#f8fafc; color:#0f172a; border-color:#cbd5e1;" onclick="openStoreSupportModal('${loja.id}')">
+                        💬 Chat ${hasUnread ? `(${unreadMsgs.length})` : ''}
+                    </button>
+                    <button type="button" class="btn-quick" style="background:${isBlocked ? '#dcfce7' : '#fee2e2'}; color:${isBlocked ? '#15803d' : '#b91c1c'}; border-color:${isBlocked ? '#86efac' : '#fecaca'};" onclick="toggleBlockStore('${loja.id}', ${isBlocked})">
+                        ${isBlocked ? '🔓 Liberar Loja' : '🚫 Bloquear'}
+                    </button>
+                </div>
+            </div>`;
+        }).join('');
+    };
+
+    window.getStoreSupportConversation = (storeId) => {
+        const loja = window.adminStores.find(s => s.id === storeId);
+        const lojaMsgs = Array.isArray(loja?.suporteChatLoja) ? loja.suporteChatLoja : [];
+        const adminMsgs = Array.isArray(window.adminSupportChats[storeId]?.messages) ? window.adminSupportChats[storeId].messages : [];
+        return [...lojaMsgs, ...adminMsgs].sort((a, b) => (a.ts || 0) - (b.ts || 0));
+    };
+
+    window.openStoreSupportModal = async (storeId) => {
+        window.activeSupportStoreId = storeId;
+        const loja = window.adminStores.find(s => s.id === storeId); if (!loja) return;
+        el('sup-modal-logo').src = loja.logo_loja || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150';
+        el('sup-modal-store-name').innerText = loja.nome_loja || 'Loja Parceira';
+        const isBlocked = Boolean(loja.bloqueada);
+        el('sup-modal-store-status').innerHTML = isBlocked ? `<span style="color:#dc2626;">🚫 Loja Bloqueada</span>` : `<span style="color:#16a34a;">🟢 Loja Ativa</span>`;
+
+        const pixBtn = el('sup-modal-pix-btn');
+        if (pixBtn) pixBtn.onclick = () => window.sendBillingReminder(storeId);
+
+        el('modal-store-support').style.display = 'flex';
+        window.renderAdminSupportMessages(storeId);
+        if (!window.adminSupportChats[storeId]) window.adminSupportChats[storeId] = { messages: [], lastAdminReadMs: Date.now() };
+        else window.adminSupportChats[storeId].lastAdminReadMs = Date.now();
+        await window.saveSystemConfig({ supportChats: window.adminSupportChats }).catch(() => {});
+    };
+
+    window.closeStoreSupportModal = () => { window.activeSupportStoreId = null; el('modal-store-support').style.display = 'none'; };
+
+    window.renderAdminSupportMessages = (storeId) => {
+        const box = el('sup-admin-chat-msgs'); if (!box) return;
+        const msgs = window.getStoreSupportConversation(storeId);
+        if (!msgs.length) { box.innerHTML = `<p style="text-align:center; color:#64748b; margin:auto; padding:20px; font-weight:600;">💬 Nenhuma mensagem ainda.</p>`; return; }
+        box.innerHTML = msgs.map(m => `
+            <div class="sup-bubble ${m.sender === 'admin' ? 'admin' : 'loja'}">
+                <div style="font-size:0.7rem; font-weight:800; opacity:0.75; margin-bottom:2px;">${m.sender === 'admin' ? '👑 Você (Dono)' : '🏪 Lojista'}</div>
+                <div>${window.escapeHtml(m.text)}</div>
+                <div style="font-size:0.65rem; opacity:0.7; text-align:right; margin-top:4px;">${window.escapeHtml(m.time || '')}</div>
+            </div>`).join('');
+        box.scrollTop = box.scrollHeight;
+    };
+
+    window.sendAdminSupportMsg = async () => {
+        const storeId = window.activeSupportStoreId; if (!storeId) return;
+        const inp = el('sup-admin-chat-input'), txt = inp.value.trim(); if (!txt) return;
+        inp.value = '';
+        if (!window.adminSupportChats[storeId]) window.adminSupportChats[storeId] = { messages: [], lastAdminReadMs: Date.now() };
+        window.adminSupportChats[storeId].messages.push({ id: 'adm_' + Date.now(), sender: 'admin', text: txt, time: new Date().toTimeString().slice(0,5), ts: Date.now() });
+        window.adminSupportChats[storeId].lastAdminMsgMs = Date.now();
+        window.renderAdminSupportMessages(storeId);
+        await window.saveSystemConfig({ supportChats: window.adminSupportChats }).catch(() => window.showToast("⚠️ Erro ao enviar mensagem."));
+    };
+
+    window.openStoreOrdersModal = (storeId) => {
+        const loja = window.adminStores.find(s => s.id === storeId);
+        const pedidosLoja = window.adminOrders.filter(o => o.lojaId === storeId).slice().reverse();
+        el('modal-store-orders-title').innerText = `🧾 Pedidos — ${loja ? loja.nome_loja : 'Loja'}`;
+        el('modal-store-orders-list').innerHTML = pedidosLoja.length ? pedidosLoja.map(o => `
+            <div style="padding:12px; border:1px solid var(--border); border-radius:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-weight:900; color:#0f172a;">#${o.id.substring(0,6).toUpperCase()} • 👤 ${window.escapeHtml(o.cliente || 'Cliente')}</div>
+                    <div style="font-size:0.8rem; color:#475569; margin-top:3px;">🍔 ${window.escapeHtml(o.itens || '')}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:900; color:var(--success);">${window.escapeHtml(o.total || 'R$ 0,00')}</div>
+                    <span class="badge" style="background:#f1f5f9;">${window.escapeHtml(o.status || 'Novo')}</span>
+                </div>
+            </div>`).join('') : `<p style="text-align:center; padding:30px; color:#64748b; font-weight:700;">Nenhum pedido nesta loja.</p>`;
+        el('modal-store-orders').style.display = 'flex';
+    };
+
+    window.toggleBlockStore = (storeId, currentlyBlocked) => {
+        const loja = window.adminStores.find(s => s.id === storeId);
+        const nomeLoja = loja?.nome_loja || 'esta loja';
+        window.askConfirm(currentlyBlocked ? `Liberar "${nomeLoja}" para voltar a aparecer no aplicativo?` : `Bloquear "${nomeLoja}" imediatamente no aplicativo dos clientes?`, async () => {
+            const newState = !currentlyBlocked;
+            window.adminBlockedMap[storeId] = newState;
+            await window.saveSystemConfig({ blockedStores: window.adminBlockedMap });
+            setDoc(doc(db, "lojas", storeId), { bloqueada: newState }, { merge: true }).catch(() => {});
+            window.showToast(newState ? `🚫 Loja bloqueada!` : `🔓 Loja liberada!`);
+        });
+    };
+
+    // Seleciona um dos 3 modos rápidos no Modal de Edição da Loja
+    window.selectStoreEditMode = (mode) => {
+        el('edit-store-mode').value = mode;
+        const bNormal = el('mode-btn-normal'), bFree = el('mode-btn-free'), bBlocked = el('mode-btn-blocked');
+        bNormal.className = 'mode-card-btn' + (mode === 'NORMAL' ? ' active-normal' : '');
+        bFree.className = 'mode-card-btn' + (mode === 'FREE' ? ' active-free' : '');
+        bBlocked.className = 'mode-card-btn' + (mode === 'BLOCKED' ? ' active-blocked' : '');
+        el('edit-billing-fields-box').style.display = (mode === 'NORMAL') ? 'block' : 'none';
+    };
+
+    window.renderStoreModalOverview = (storeId) => {
+        const loja = window.adminStores.find(x => x.id === storeId), box = el('modal-store-full-overview');
+        if (!loja || !box) return;
+        const pedidosLoja = window.adminOrders.filter(o => o.lojaId === loja.id);
+        const concluidosLoja = pedidosLoja.filter(o => window.isOrderDone(o.status));
+        const fatLoja = concluidosLoja.reduce((acc, o) => acc + window.parseMoney(o.total), 0);
+        const prodsLoja = window.adminProducts.filter(p => p.lojaId === loja.id).length;
+
+        box.innerHTML = `
+            <div class="store-stats">
+                <div class="stat-pill"><small>Entregues</small><strong>${concluidosLoja.length} / ${pedidosLoja.length}</strong></div>
+                <div class="stat-pill"><small>Faturamento</small><strong style="color:var(--success);">R$ ${fatLoja.toFixed(2).replace('.', ',')}</strong></div>
+                <div class="stat-pill"><small>Cardápio</small><strong>${prodsLoja} itens</strong></div>
+            </div>
+            <button type="button" class="btn-act" style="width:100%; justify-content:center; background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; margin-bottom:6px; padding:10px;" onclick="openStoreOrdersModal('${loja.id}')">
+                🧾 Ver Histórico de Pedidos desta Loja
+            </button>`;
+    };
+
+    window.openEditStoreModal = (storeId) => {
+        const s = window.adminStores.find(x => x.id === storeId); if (!s) return;
+        el('edit-store-id').value = s.id;
+        el('edit-store-name').value = s.nome_loja || '';
+        el('edit-store-rating').value = s.nota || '5.0';
+        el('edit-store-wpp').value = s.whatsapp || '';
+        el('edit-store-logo').value = s.logo_loja || '';
+        el('edit-store-fee').value = s.valorMensalidade ?? (window.adminDefaultFee || 50.00);
+
+        const expMs = Number(s.expiraEmMs) || (Date.now() + window.DIAS_RENOVACAO_PADRAO * 86400000);
+        el('edit-store-exp-days').value = Math.max(0, Math.ceil((expMs - Date.now()) / 86400000));
+
+        const isBlocked = Boolean(s.bloqueada);
+        const isFree = (s.cobrancaAtiva === false || String(s.cobrancaAtiva).toLowerCase() === 'false');
+        if (isBlocked) window.selectStoreEditMode('BLOCKED');
+        else if (isFree) window.selectStoreEditMode('FREE');
+        else window.selectStoreEditMode('NORMAL');
+
+        window.renderStoreModalOverview(storeId);
+        el('modal-edit-store').style.display = 'flex';
+    };
+
+    window.saveStoreFromAdmin = async () => {
+        const id = el('edit-store-id').value; if (!id) return;
+        const mode = el('edit-store-mode').value || 'NORMAL';
+        const isBlocked = (mode === 'BLOCKED');
+        const cobrancaAtiva = (mode === 'NORMAL');
+
+        // <-- CÁLCULO MANUAL DE DIAS RESTANTES QUANDO VOCÊ EDITA A LOJA:
+        const expDaysVal = parseFloat(el('edit-store-exp-days').value);
+        const newExpMs = !isNaN(expDaysVal)
+            ? (expDaysVal <= 0 ? Date.now() - 1000 : Date.now() + (expDaysVal * 86400000))
+            : (Date.now() + (window.DIAS_RENOVACAO_PADRAO * 86400000));
+        const isExpiredNow = cobrancaAtiva && (newExpMs <= Date.now());
+        const nomeLoja = el('edit-store-name').value.trim();
+        const feeVal = parseFloat(el('edit-store-fee').value) || (window.adminDefaultFee || 50.00);
+        const payData = window.buildDefaultInfiniteAndPixForStore(id, nomeLoja, feeVal);
+
+        window.adminBlockedMap[id] = isBlocked;
+
+        const updatedFields = {
+            ...(window.adminStoreOverrides[id] || {}),
+            ...payData,
+            nome_loja: nomeLoja,
+            nota: el('edit-store-rating').value.trim() || '5.0',
+            whatsapp: el('edit-store-wpp').value.trim(),
+            logo_loja: el('edit-store-logo').value.trim(),
+            bloqueada: isBlocked,
+            cobrancaAtiva,
+            valorMensalidade: feeVal,
+            expiraEmMs: newExpMs,
+            contaExpirada: isExpiredNow,
+            ...(isExpiredNow ? { forcarModalCobrancaMs: Date.now() } : {})
+        };
+        delete updatedFields.aberto;
+        window.adminStoreOverrides[id] = updatedFields;
+        await window.saveSystemConfig({
+            blockedStores: window.adminBlockedMap,
+            storeOverrides: window.adminStoreOverrides
+        });
+        setDoc(doc(db, "lojas", id), {
+            ...updatedFields,
+            ...(isExpiredNow ? { aberto: false } : {})
+        }, { merge: true }).catch(() => {});
+        el('modal-edit-store').style.display = 'none';
+        window.showToast(isExpiredNow ? "🚨 Loja vencida! Modal de pagamento ativado no Painel do Lojista." : "✅ Alterações da loja salvas!");
+    };
+
+    window.renderBannersEditor = () => {
+        const container = el('banners-list-container'); if (!container) return;
+        const storeOptions = `<option value="">-- Apenas Imagem Ampliável (Sem loja específica) --</option>` +
+            window.adminStores.map(s => `<option value="${s.id}">🏪 Abrir loja: ${window.escapeHtml(s.nome_loja || 'Loja')}</option>`).join('');
+
+        container.innerHTML = window.adminBanners.map((b, idx) => `
+            <div class="banner-item-row">
+                <img src="${window.escapeHtml(b.img)}" class="banner-preview" onerror="this.src='https://placehold.co/300x160/e2e8f0/475569?text=Banner'">
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <input type="text" placeholder="Título da Promoção / Anúncio (Ex: Pizza Grande R$ 39,90)" value="${window.escapeHtml(b.text || '')}" oninput="window.adminBanners[${idx}].text=this.value" style="padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-weight:800;">
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <input type="text" placeholder="URL da Imagem (https://...) ou envie da Galeria 👉" value="${window.escapeHtml(b.img || '')}" oninput="window.adminBanners[${idx}].img=this.value" style="flex:1; min-width:180px; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:0.82rem;">
+                        <label class="btn-act" style="background:#0f172a; color:#fff; cursor:pointer; margin:0;">
+                            📁 Galeria
+                            <input type="file" accept="image/*" style="display:none;" onchange="uploadBannerImageFile(${idx}, this)">
+                        </label>
+                    </div>
+                    <select onchange="window.adminBanners[${idx}].lojaId=this.value" style="padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-weight:700; font-size:0.82rem; background:#fff;">
+                        ${storeOptions.replace(`value="${b.lojaId || ''}"`, `value="${b.lojaId || ''}" selected`)}
+                    </select>
+                </div>
+                <button class="btn-act" style="background:#fee2e2; color:#b91c1c; padding:12px;" onclick="window.adminBanners.splice(${idx},1); renderBannersEditor();">🗑️</button>
+            </div>`).join('');
+    };
+
+    window.uploadBannerImageFile = (idx, inputEl) => {
+        const file = inputEl?.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const maxW = 960, maxH = 540;
+                const ratio = Math.min(maxW / img.width, maxH / img.height, 1);
+                canvas.width = Math.max(1, Math.round(img.width * ratio));
+                canvas.height = Math.max(1, Math.round(img.height * ratio));
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.80);
+                if (window.adminBanners[idx]) {
+                    window.adminBanners[idx].img = dataUrl;
+                    window.renderBannersEditor();
+                    window.showToast("✅ Imagem da propaganda carregada! Clique em Publicar.");
+                }
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.addBannerRow = () => { window.adminBanners.push({ img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80", text: "Nova Propaganda Patrocinada", lojaId: "" }); window.renderBannersEditor(); };
+
+    window.updateAppBrandPreview = () => {
+        const p1 = (el('app-brand-part1')?.value || '').trim() || 'Juaba';
+        const p2 = (el('app-brand-part2')?.value ?? '').trim();
+        if (el('preview-brand-p1')) el('preview-brand-p1').innerText = p1;
+        if (el('preview-brand-p2')) el('preview-brand-p2').innerText = p2;
+        if (el('hdr-brand-p1')) el('hdr-brand-p1').innerText = p1;
+        if (el('hdr-brand-p2')) el('hdr-brand-p2').innerText = p2;
+    };
+
+    window.renderAppBrandEditor = () => {
+        const p1 = window.nomeAppParte1 || 'Juaba';
+        const p2 = window.nomeAppParte2 ?? 'Delivery';
+        if (el('app-brand-part1') && document.activeElement !== el('app-brand-part1')) el('app-brand-part1').value = p1;
+        if (el('app-brand-part2') && document.activeElement !== el('app-brand-part2')) el('app-brand-part2').value = p2;
+        if (el('preview-brand-p1')) el('preview-brand-p1').innerText = p1;
+        if (el('preview-brand-p2')) el('preview-brand-p2').innerText = p2;
+        if (el('hdr-brand-p1')) el('hdr-brand-p1').innerText = p1;
+        if (el('hdr-brand-p2')) el('hdr-brand-p2').innerText = p2;
+    };
+
+    window.saveAppBrandNameConfig = async () => {
+        const p1 = (el('app-brand-part1')?.value || '').trim();
+        const p2 = (el('app-brand-part2')?.value ?? '').trim();
+        if (!p1) {
+            window.showToast("⚠️ Digite pelo menos a 1ª parte do nome do aplicativo!");
+            return;
+        }
+        window.nomeAppParte1 = p1;
+        window.nomeAppParte2 = p2;
+        localStorage.setItem('juaba_brand_p1', p1);
+        localStorage.setItem('juaba_brand_p2', p2);
+        window.updateAppBrandPreview();
+        try {
+            await window.saveSystemConfig({
+                nomeAppParte1: p1,
+                nomeAppParte2: p2,
+                nomeAplicativo: `${p1}${p2}`
+            });
+            window.showToast(`🏷️ Nome do aplicativo alterado para "${p1}${p2}" em todos os aparelhos!`);
+        } catch (e) {
+            window.showToast("⚠️ Erro ao salvar o novo nome no Firebase.");
+        }
+    };
+
+    window.togglePopupPromoPreviewState = () => {
+        const cb = el('popup-promo-active');
+        const lbl = el('popup-promo-status-lbl');
+        if (!cb || !lbl) return;
+        lbl.innerText = cb.checked ? '🟢 Ligada no App' : '🔴 Desligada';
+    };
+
+    window.renderPopupPromoEditor = () => {
+        const p = window.adminPopupPromo || {};
+        const cbActive = el('popup-promo-active');
+        if (!cbActive) return;
+        cbActive.checked = Boolean(p.ativo);
+        window.togglePopupPromoPreviewState();
+
+        if (el('popup-promo-img')) el('popup-promo-img').value = p.img || '';
+        if (el('popup-promo-preview')) {
+            el('popup-promo-preview').src = (p.img && p.img.trim()) ? p.img : 'https://placehold.co/400x500/0f172a/ffffff?text=Pop-up+App';
+        }
+
+        const selStore = el('popup-promo-store');
+        if (selStore) {
+            const opts = `<option value="">-- Apenas fechar ao tocar ou clicar no X --</option>` +
+                window.adminStores.map(s => `<option value="${s.id}">🏪 Abrir cardápio de: ${window.escapeHtml(s.nome_loja || 'Loja')}</option>`).join('');
+            selStore.innerHTML = opts;
+            selStore.value = p.lojaId || '';
+        }
+
+        const cbSched = el('popup-promo-schedule-enabled');
+        const schedBox = el('popup-promo-schedule-box');
+        if (cbSched && schedBox) {
+            cbSched.checked = Boolean(p.agendamentoAtivo);
+            schedBox.style.display = cbSched.checked ? 'block' : 'none';
+        }
+        if (el('popup-promo-date')) el('popup-promo-date').value = p.dataEspecifica || '';
+        if (el('popup-promo-start-time')) el('popup-promo-start-time').value = p.horaInicio || '08:00';
+        if (el('popup-promo-end-time')) el('popup-promo-end-time').value = p.horaFim || '23:59';
+
+        const dias = Array.isArray(p.diasSemana) ? p.diasSemana.map(Number) : [0, 1, 2, 3, 4, 5, 6];
+        document.querySelectorAll('.pop-day-cb').forEach(cb => {
+            cb.checked = dias.includes(Number(cb.value));
+        });
+    };
+
+    window.uploadPopupPromoImageFile = (inputEl) => {
+        const file = inputEl?.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const maxW = 900, maxH = 1150;
+                const ratio = Math.min(maxW / img.width, maxH / img.height, 1);
+                canvas.width = Math.max(1, Math.round(img.width * ratio));
+                canvas.height = Math.max(1, Math.round(img.height * ratio));
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+                if (el('popup-promo-img')) el('popup-promo-img').value = dataUrl;
+                if (el('popup-promo-preview')) el('popup-promo-preview').src = dataUrl;
+                window.showToast("✅ Imagem do Pop-up carregada! Clique em Salvar Propaganda Pop-up.");
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.savePopupPromoConfig = async () => {
+        const ativo = Boolean(el('popup-promo-active')?.checked);
+        const img = (el('popup-promo-img')?.value || '').trim();
+        const lojaId = (el('popup-promo-store')?.value || '').trim();
+        const agendamentoAtivo = Boolean(el('popup-promo-schedule-enabled')?.checked);
+        const dataEspecifica = (el('popup-promo-date')?.value || '').trim();
+        const horaInicio = (el('popup-promo-start-time')?.value || '08:00').trim();
+        const horaFim = (el('popup-promo-end-time')?.value || '23:59').trim();
+
+        const diasSemana = [];
+        document.querySelectorAll('.pop-day-cb').forEach(cb => {
+            if (cb.checked) diasSemana.push(Number(cb.value));
+        });
+
+        if (ativo && !img.startsWith('https://') && !img.startsWith('data:image/')) {
+            window.showToast("⚠️ Escolha uma imagem da Galeria ou cole um link https:// válido antes de ligar o Pop-up!");
+            return;
+        }
+
+        const payloadPop = {
+            ativo,
+            img,
+            lojaId,
+            agendamentoAtivo,
+            dataEspecifica,
+            diasSemana: diasSemana.length ? diasSemana : [0, 1, 2, 3, 4, 5, 6],
+            horaInicio,
+            horaFim,
+            updatedAtMs: Date.now()
+        };
+
+        window.adminPopupPromo = payloadPop;
+        await window.saveSystemConfig({ popupPropaganda: payloadPop });
+        window.showToast(ativo ? "🎯 Propaganda Pop-up ATIVADA no App do Cliente!" : "⚪ Propaganda Pop-up desligada.");
+    };
+
+    window.saveMarketplaceBanners = async () => {
+        const clean = window.adminBanners
+            .filter(b => {
+                const u = (b.img || '').trim();
+                return u.startsWith('https://') || u.startsWith('data:image/');
+            })
+            .map(b => ({
+                img: b.img.trim(),
+                text: (b.text || '').trim(),
+                lojaId: (b.lojaId || '').trim()
+            }));
+        window.adminBanners = clean;
+        await window.saveSystemConfig({ banners: clean });
+        window.showToast("🖼️ Carrossel de propagandas publicado no aplicativo!");
+    };
+    window.resetDefaultBanners = () => {
+        window.adminBanners = [
+            { img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80", text: "Festival de Pizzas", lojaId: "" },
+            { img: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&q=80", text: "Artesanais Suculentos", lojaId: "" }
+        ];
+        window.renderBannersEditor(); window.saveMarketplaceBanners();
+    };
+
+    window.renderGlobalOrders = () => {
+        const box = el('global-orders-list'), stFilter = el('filter-order-status').value;
+        let list = [...window.adminOrders];
+        if (stFilter !== 'TODOS') list = list.filter(o => stFilter === 'Concluido' ? window.isOrderDone(o.status) : o.status === stFilter);
+        list.reverse();
+        box.innerHTML = list.length ? list.slice(0, 80).map(o => {
+            const loja = window.adminStores.find(s => s.id === o.lojaId);
+            return `
+            <div style="padding:14px; border:1px solid var(--border); border-radius:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-weight:900; color:#0f172a;">#${o.id.substring(0,6).toUpperCase()} • 🏪 ${window.escapeHtml(loja?.nome_loja || o.nomeLoja || 'Loja')}</div>
+                    <div style="font-size:0.84rem; color:#334155; font-weight:700; margin-top:4px;">👤 ${window.escapeHtml(o.cliente || 'Cliente')} • 📍 ${window.escapeHtml(o.endereco || 'Retirada')}</div>
+                    <div style="font-size:0.8rem; color:#64748b; margin-top:3px;">🍔 ${window.escapeHtml(o.itens || '')}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:900; font-size:1.05rem; color:var(--success);">${window.escapeHtml(o.total || 'R$ 0,00')}</div>
+                    <span class="badge" style="background:#f1f5f9;">${window.escapeHtml(o.status || 'Novo')}</span>
+                </div>
+            </div>`;
+        }).join('') : `<p style="text-align:center; padding:30px; color:#64748b; font-weight:700;">Nenhum pedido encontrado.</p>`;
+    };
+
+    window.getMergedClientsList = () => {
+        const map = new Map();
+        window.adminClients.forEach(c => {
+            const key = (c.email || c.id || '').toLowerCase(); if (!key) return;
+            map.set(key, { email: key, nome: c.nome || 'Cliente', telefone: c.telefone || '', enderecos: Array.isArray(c.enderecos) ? c.enderecos : [] });
+        });
+        window.adminOrders.forEach(o => {
+            const key = (o.emailCliente || '').toLowerCase(); if (!key || map.has(key)) return;
+            map.set(key, { email: key, nome: o.cliente || 'Cliente', telefone: o.telefone || '', enderecos: [] });
+        });
+        return Array.from(map.values());
+    };
+
+    window.renderClientsAdmin = () => {
+        const box = el('admin-clients-list'), term = (el('search-client-input').value || '').toLowerCase().trim();
+        const filtered = window.getMergedClientsList().filter(c => !term || c.nome.toLowerCase().includes(term) || c.email.toLowerCase().includes(term));
+        box.innerHTML = filtered.length ? filtered.map(c => {
+            const pedidosCli = window.adminOrders.filter(o => (o.emailCliente || '').toLowerCase() === c.email);
+            return `
+            <div style="padding:16px; border:1px solid var(--border); border-radius:14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; background:#fff;">
+                <div>
+                    <div style="font-weight:900; font-size:1rem; color:#0f172a;">👤 ${window.escapeHtml(c.nome)} <span class="badge" style="background:#eff6ff; color:#1d4ed8;">${pedidosCli.length} pedido(s)</span></div>
+                    <div style="font-size:0.8rem; color:#64748b; font-weight:600; margin-top:4px;">✉️ ${window.escapeHtml(c.email)} • 📱 ${window.escapeHtml(c.telefone || 'Sem telefone')}</div>
+                </div>
+            </div>`;
+        }).join('') : `<p style="text-align:center; padding:30px; color:#64748b; font-weight:700;">Nenhum consumidor encontrado.</p>`;
+    };
+
+    window.onload = async () => {
+        if (sessionStorage.getItem('juaba_super_admin_ok') === 'true') {
+            el('admin-auth-screen').style.display = 'none';
+            await ensureFirebaseAdminAuth();
+            window.startAdminListeners();
+        }
+    };
+</script>
+</body>
+</html>
